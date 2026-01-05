@@ -13,6 +13,10 @@ function createPostgresClient(config) {
 }
 
 async function getSchema(pool) {
+  if (!pool || typeof pool.query !== "function") {
+    throw new Error("DB pool not available");
+  }
+
   const res = await pool.query(`
     SELECT table_name, column_name, data_type
     FROM information_schema.columns
@@ -23,6 +27,10 @@ async function getSchema(pool) {
 }
 
 async function getSampleRows(pool, table) {
+  if (!pool || typeof pool.query !== "function") {
+    throw new Error("DB pool not available");
+  }
+
   const { rows: tables } = await pool.query(`
     SELECT table_name
     FROM information_schema.tables
