@@ -11,7 +11,7 @@ function App() {
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
   const [database, setDatabase] = useState('');
-    const [statusMessage, setStatusMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
   const [dbStatus, setDbStatus] = useState('unknown');
   const [showExplorer, setShowExplorer] = useState(false);
   const [schema, setSchema] = useState([]);
@@ -94,13 +94,6 @@ function App() {
     }
   };
 
-  // const connected = async () => {
-  //   const available = await checkDbStatus();
-  //   if (available) {
-  //     await fetchSchema();
-  //     setShowExplorer(true);
-  // };
-
   useEffect(() => {
     fetchData();
     (async () => {
@@ -112,13 +105,7 @@ function App() {
     })();
   }, []);
 
-  
-
-        <div className="actions">
-          <button onClick={connect}>Connect</button>
-          <button onClick={connectDemo}>Use Demo DB</button>
-        </div>
-         if (showExplorer) {
+  if (showExplorer) {
     return <DbExplorer tables={schema} onBack={() => setShowExplorer(false)} />;
   }
 
@@ -187,7 +174,7 @@ function App() {
                   onChange={e => setPassword(e.target.value)}
                 />
               </div>
-              <div className="field">
+              <div className="field field-full">
                 <label htmlFor="pg-database">Database</label>
                 <input id="pg-database" value={database} onChange={e => setDatabase(e.target.value)} />
               </div>
@@ -247,7 +234,5 @@ function App() {
     </div>
   )
 }
-
-   
 
 export default App
