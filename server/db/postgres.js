@@ -18,10 +18,27 @@ async function getSchema(pool) {
   }
 
   const res = await pool.query(`
-    SELECT table_name, column_name, data_type
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-    ORDER BY table_name;
+    SELECT
+      c.table_name,
+      c.column_name,
+      c.data_type,
+      tc.constraint_type = 'PRIMARY KEY' AS is_primary,
+      tc.constraint_type = 'FOREIGN KEY' AS is_foreign,
+      ccu.table_name AS foreign_table,
+      ccu.column_name AS foreign_column
+    FROM information_schema.columns c
+    LEFT JOIN information_schema.key_column_usage kcu
+      ON c.table_name = kcu.table_name
+      AND c.column_name = kcu.column_name
+      AND c.table_schema = kcu.table_schema
+    LEFT JOIN information_schema.table_constraints tc
+      ON kcu.constraint_name = tc.constraint_name
+      AND kcu.table_schema = tc.table_schema
+    LEFT JOIN information_schema.constraint_column_usage ccu
+      ON tc.constraint_name = ccu.constraint_name
+      AND tc.table_schema = ccu.table_schema
+    WHERE c.table_schema = 'public'
+    ORDER BY c.table_name, c.ordinal_position;
   `);
   return res.rows;
 }
