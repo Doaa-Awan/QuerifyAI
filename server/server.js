@@ -1,37 +1,34 @@
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import { createPostgresClient, getSchema } from './db/postgres.js';
+import router from './routes.js';
+
 //.env config
-require('dotenv').config();
-const express = require('express');
+dotenv.config();
+
 const app = express();
+app.use(express.json()); //json middleware to parse json object in req body
+app.use(router);
+
+const PORT = process.env.VITE_PORT || 5000;
 
 //cors to connect to frontend
-const cors = require('cors');
 const corsOptions = {
-  origin: ['http://localhost:5173'], 
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
-//   allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+  origin: ['http://localhost:5173'],
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
 
-const PORT = process.env.VITE_PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-app.get("/api", (req, res) => {
-  res.json({ message: "Hello from the server!" });
-});
-
-//POSTGRES CONNECTION SETUP
-
+///////////////////////  POSTGRES CONNECTION SETUP  /////////////////////////////////
 let dbPool;
 let dbAvailable = false;
 
 //import Postgres client functions
-const {
-  createPostgresClient,
-} = require("./db/postgres");
 
 app.post('/db/connect-demo', async (req, res) => {
   const demoCfg = {
@@ -94,7 +91,11 @@ async function testAndSetDb(config) {
 
     // close previous pool if exists
     if (dbPool && dbPool !== candidatePool) {
-      try { await dbPool.end(); } catch (e) { /* ignore */ }
+      try {
+        await dbPool.end();
+      } catch (e) {
+        /* ignore */
+      }
     }
 
     dbPool = candidatePool;
@@ -104,7 +105,11 @@ async function testAndSetDb(config) {
 
     return { ok: true };
   } catch (err) {
-    try { if (candidatePool) await candidatePool.end(); } catch (e) { /* ignore */ }
+    try {
+      if (candidatePool) await candidatePool.end();
+    } catch (e) {
+      /* ignore */
+    }
     console.error('testAndSetDb error:', err.message);
     return { ok: false, error: err.message };
   }
@@ -114,15 +119,15 @@ app.get('/db/status', (req, res) => {
   res.json({ available: !!dbAvailable });
 });
 
-app.get("/health/db", async (req, res) => {
+app.get('/health/db', async (req, res) => {
   if (!dbPool || !dbAvailable) {
-    return res.status(503).json({ status: "unavailable", error: "DB connection not available" });
+    return res.status(503).json({ status: 'unavailable', error: 'DB connection not available' });
   }
 
   try {
-    const result = await dbPool.query("SELECT NOW()");
+    const result = await dbPool.query('SELECT NOW()');
     res.json({
-      status: "ok",
+      status: 'ok',
       time: result.rows[0].now,
     });
   } catch (err) {
@@ -130,11 +135,9 @@ app.get("/health/db", async (req, res) => {
   }
 });
 
-const { getSchema } = require("./db/postgres");
-
-app.get("/db/schema", async (req, res) => {
+app.get('/db/schema', async (req, res) => {
   if (!dbPool || !dbAvailable) {
-    return res.status(503).json({ error: "DB connection not available" });
+    return res.status(503).json({ error: 'DB connection not available' });
   }
 
   try {
@@ -144,5 +147,3 @@ app.get("/db/schema", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-

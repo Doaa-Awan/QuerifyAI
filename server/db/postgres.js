@@ -1,5 +1,5 @@
 // server/db/postgres.js
-const { Pool } = require("pg");
+import { Pool } from 'pg';
 
 function createPostgresClient(config) {
   return new Pool({
@@ -64,8 +64,4 @@ async function getSampleRows(pool, table) {
   return res.rows;
 }
 
-module.exports = {
-  createPostgresClient,
-  getSchema,
-  getSampleRows,
-};
+export { createPostgresClient, getSchema, getSampleRows };
