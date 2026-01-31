@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ChatBot from './components/ui/ChatBot';
 
 export default function DbExplorer({ tables = [], onBack }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -13,93 +14,61 @@ export default function DbExplorer({ tables = [], onBack }) {
   };
 
   return (
-    <div className="db-explorer-shell">
-      <header className="db-explorer-header">
+    <div className='db-explorer-shell'>
+      <header className='db-explorer-header'>
         <div>
-          <p className="eyebrow">AI DB Explorer</p>
+          <p className='eyebrow'>AI DB Explorer</p>
           <h2>Ask the database</h2>
-          <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
+          <p className='subtitle'>Use plain language to explore tables, rows, and relationships.</p>
+          <button className='btn ghost chat-back' type='button' onClick={onBack}>
+            Back
+          </button>
         </div>
       </header>
 
       <div className={`db-explorer-body ${isCollapsed ? 'collapsed' : ''}`}>
-        <section className="db-main">
-          <div className="chat-window">
-            <button className="btn ghost chat-back" type="button" onClick={onBack}>
-              Back
-            </button>
-            <div className="chat-header">
-              <span>New question</span>
-              <span className="chat-hint">AI answers in seconds</span>
-            </div>
-            <div className="chat-messages">
-              <div className="chat-message muted">
-                Ask something like “Show total revenue by month” or “List top 10 customers.”
-              </div>
-            </div>
-            <form className="chat-input" onSubmit={(event) => event.preventDefault()}>
-              <input
-                type="text"
-                placeholder="Ask a question about your database"
-                aria-label="Ask a question about your database"
-              />
-              <button className="btn primary" type="submit">
-                Ask
-              </button>
-            </form>
-          </div>
+        <section className='db-main'>
+          <ChatBot />
         </section>
 
-        <aside
-          className={`db-sidebar ${isCollapsed ? 'collapsed' : ''}`}
-          onClick={() => setIsCollapsed((prev) => !prev)}
-        >
+        <aside className={`db-sidebar ${isCollapsed ? 'collapsed' : ''}`} onClick={() => setIsCollapsed((prev) => !prev)}>
           <button
-            className="sidebar-toggle"
-            type="button"
+            className='sidebar-toggle'
+            type='button'
             onClick={(event) => {
               event.stopPropagation();
               setIsCollapsed((prev) => !prev);
             }}
             aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
             {isCollapsed ? '>' : '<'}
           </button>
-          <div className="sidebar-header">
+          <div className='sidebar-header'>
             <div>
               <h3>Tables</h3>
-              <p className="sidebar-meta">{tables.length} total</p>
+              <p className='sidebar-meta'>{tables.length} total</p>
             </div>
           </div>
-          <div className="table-list">
+          <div className='table-list'>
             {tables.length === 0 ? (
-              <p className="empty-state">No tables found.</p>
+              <p className='empty-state'>No tables found.</p>
             ) : (
               <ul>
                 {tables.map((table) => (
-                  <li key={table.name} className="table-item">
-                    <button
-                      className="table-row"
-                      type="button"
-                      onClick={(event) => toggleTable(event, table.name)}
-                    >
-                      <span className="table-name">{table.name}</span>
-                      <span className="count">{table.columnCount} cols</span>
+                  <li key={table.name} className='table-item'>
+                    <button className='table-row' type='button' onClick={(event) => toggleTable(event, table.name)}>
+                      <span className='table-name'>{table.name}</span>
+                      <span className='count'>{table.columnCount} cols</span>
                     </button>
                     {expandedTables[table.name] && table.columns?.length ? (
-                      <ul className="column-list">
+                      <ul className='column-list'>
                         {table.columns.map((column) => (
                           <li key={`${table.name}.${column.name}`}>
-                            <span className="column-name">{column.name}</span>
-                            <span className="column-meta">
+                            <span className='column-name'>{column.name}</span>
+                            <span className='column-meta'>
                               {column.dataType}
-                              {column.isPrimary ? <span className="key-badge">PK</span> : null}
-                              {column.isForeign ? (
-                                <span className="key-badge">
-                                  FK{column.foreignTable ? ` → ${column.foreignTable}` : ''}
-                                </span>
-                              ) : null}
+                              {column.isPrimary ? <span className='key-badge'>PK</span> : null}
+                              {column.isForeign ? <span className='key-badge'>FK{column.foreignTable ? ` → ${column.foreignTable}` : ''}</span> : null}
                             </span>
                           </li>
                         ))}
