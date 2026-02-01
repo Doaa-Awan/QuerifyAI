@@ -13,11 +13,6 @@ const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-// type ChatResponse = {
-//     id: String;
-//     message: String;
-// }
-
 // Public interface
 export const chatService = {
   // Chat service methods would go here
@@ -27,7 +22,7 @@ export const chatService = {
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
-      max_tokens: 100, //max_completion_tokens
+      max_tokens: 200, //max_completion_tokens
       previous_response: conversationRepository.getLastResponse(conversationId),
       //stream: true,
     });
