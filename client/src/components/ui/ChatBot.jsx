@@ -9,12 +9,12 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
-  const formRef = useRef(null);
+  const lastMessageRef = useRef(null);
   const conversationId = useRef(crypto.randomUUID());
   const { register, handleSubmit, reset, formState } = useForm();
 
   useEffect(() => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
+    lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const onSubmit = async ({ prompt }) => {
@@ -59,6 +59,7 @@ const ChatBot = () => {
             <p
               key={index}
               onCopy={onCopyMessage}
+              ref={index === messages.length - 1 ? lastMessageRef : null}
               className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
             >
               <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -81,7 +82,6 @@ const ChatBot = () => {
         <form
           onSubmit={handleSubmit(onSubmit)}
           onKeyDown={onKeyDown}
-          ref={formRef}
           className='chat-input'
         >
           <textarea
