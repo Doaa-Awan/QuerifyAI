@@ -261,6 +261,7 @@
   width: 100%;
   max-width: none;
   margin: 0;
+  /* padding: 10px; */
   padding: 3.5rem 0 2.5rem 1.5rem;
   color: var(--ink);
   min-height: 100vh;
@@ -275,6 +276,9 @@
   gap: 1.5rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
+  /* position: sticky;
+  top: 0;
+  z-index: 1; */
 }
 
 .db-explorer-header h2 {
@@ -298,11 +302,11 @@
 }
 
 .chat-window {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  padding: 1.75rem;
+  /* background: var(--surface); */
+  /* border: 1px solid var(--line); */
+  /* border-radius: 24px; */
+  /* box-shadow: var(--shadow); */
+  /* padding: 1.75rem; */
   margin-right: 30px;
 }
 
@@ -314,12 +318,13 @@
 
 .chat-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: end;
+  /* justify-content: space-between; */
   color: var(--muted);
   font-weight: 600;
   letter-spacing: 0.02em;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; */
+  /* border-bottom: 1px solid var(--line); */
 }
 
 .chat-hint {
@@ -327,6 +332,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--accent);
+  margin-bottom: 1rem;
 }
 
 .chat-messages {

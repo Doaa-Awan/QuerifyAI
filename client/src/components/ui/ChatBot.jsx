@@ -20,7 +20,7 @@ const ChatBot = () => {
   const onSubmit = async ({ prompt }) => {
     setMessages((prev) => [...prev, { role: 'user', content: prompt }]);
     setIsBotTyping(true);
-    reset();
+    reset({ prompt: '' });
     const { data } = await axios.post(`${API_BASE}/api/chat`, {
       prompt,
       conversationId: conversationId.current,
@@ -47,7 +47,7 @@ const ChatBot = () => {
   return (
     <div className='chat-window'>
       <div className='chat-header'>
-        <span>New question</span>
+        {/* <span></span> */}
         <span className='chat-hint'>AI answers in seconds</span>
       </div>
       {/* <div className='chat-messages'>
@@ -56,14 +56,14 @@ const ChatBot = () => {
       <div>
         <div className='chat-messages'>
           {messages.map((message, index) => (
-            <p
+            <div
               key={index}
               onCopy={onCopyMessage}
               ref={index === messages.length - 1 ? lastMessageRef : null}
               className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
             >
               <ReactMarkdown>{message.content}</ReactMarkdown>
-            </p>
+            </div>
           ))}
           {isBotTyping && (
             <div className='bot-typing'>
