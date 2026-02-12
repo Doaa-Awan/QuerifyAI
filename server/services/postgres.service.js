@@ -60,6 +60,132 @@ function formatScalar(value) {
   return `\`${String(value).replace(/\|/g, '\\|').replace(/\n/g, ' ')}\``;
 }
 
+function isDateType(columnMeta) {
+  const dataType = String(columnMeta?.data_type || '').toLowerCase();
+  return dataType.includes('date') || dataType.includes('time');
+}
+
+function looksLikeEmail(value) {
+  if (typeof value !== 'string') return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function looksLikePhone(value) {
+  if (typeof value !== 'string') return false;
+  const digits = value.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
+}
+
+function isLikelyPiiColumn(columnMeta, columnName, value) {
+  const name = String(columnName || '').toLowerCase();
+
+  if (columnMeta?.is_primary) return false;
+  if (isDateType(columnMeta)) return false;
+
+  const piiNamePatterns = [
+    'name',
+    'email',
+    'phone',
+    'mobile',
+    'ssn',
+    'social_security',
+    'passport',
+    'first_name',
+    'lastname',
+    'last_name',
+    'fullname',
+    'full_name',
+    'middle_name',
+    'dob',
+    'birth',
+    'address',
+    'street',
+    'city',
+    'state',
+    'zip',
+    'postal',
+    'country',
+    'username',
+    'user_name',
+    'password',
+    'passcode',
+    'token',
+    'secret',
+    'api_key',
+  ];
+
+  if (piiNamePatterns.some((pattern) => name.includes(pattern))) {
+    return true;
+  }
+
+  if (looksLikeEmail(value) || looksLikePhone(value)) {
+    return true;
+  }
+
+  return false;
+}
+
+function buildDummyValue(columnName, value, rowIndex) {
+  const name = String(columnName || '').toLowerCase();
+  const n = rowIndex + 1;
+
+  if (value === null || value === undefined) return value;
+
+  if (name.includes('email')) return `user${n}@example.com`;
+  if (name.includes('phone') || name.includes('mobile')) return `555010${String(n).padStart(3, '0')}`;
+  if (name.includes('first_name')) return `FirstName${n}`;
+  if (name.includes('last_name') || name.includes('lastname')) return `LastName${n}`;
+  if (name.includes('full_name') || name.includes('fullname')) return `Person ${n}`;
+  if (name === 'name' || name.endsWith('_name')) return `Name${n}`;
+  if (name.includes('address') || name.includes('street')) return `${100 + n} Example St`;
+  if (name.includes('city')) return `City${n}`;
+  if (name.includes('state')) return `State${n}`;
+  if (name.includes('zip') || name.includes('postal')) return `000${String(n).padStart(2, '0')}`;
+  if (name.includes('country')) return `Country${n}`;
+  if (name.includes('username') || name.includes('user_name')) return `user_${n}`;
+  if (name.includes('password') || name.includes('passcode') || name.includes('token') || name.includes('secret')) {
+    return `redacted_${n}`;
+  }
+
+  if (typeof value === 'string') return `redacted_${n}`;
+  if (typeof value === 'number') return n;
+  if (typeof value === 'bigint') return BigInt(n);
+  if (typeof value === 'boolean') return false;
+
+  return value;
+}
+
+function sanitizeSamples(schemaRows, tableSamples) {
+  const columnMetaMap = schemaRows.reduce((acc, row) => {
+    if (!acc[row.table_name]) {
+      acc[row.table_name] = {};
+    }
+    acc[row.table_name][row.column_name] = row;
+    return acc;
+  }, {});
+
+  const sanitized = {};
+
+  for (const [tableName, rows] of Object.entries(tableSamples)) {
+    const tableColumnMeta = columnMetaMap[tableName] || {};
+
+    sanitized[tableName] = rows.map((row, rowIndex) => {
+      const nextRow = { ...row };
+
+      for (const [columnName, value] of Object.entries(nextRow)) {
+        const columnMeta = tableColumnMeta[columnName];
+        if (isLikelyPiiColumn(columnMeta, columnName, value)) {
+          nextRow[columnName] = buildDummyValue(columnName, value, rowIndex);
+        }
+      }
+
+      return nextRow;
+    });
+  }
+
+  return sanitized;
+}
+
 function buildSnapshotMarkdown({ generatedAt, tables, schemaRows, tableSamples }) {
   const groupedColumns = schemaRows.reduce((acc, row) => {
     if (!acc[row.table_name]) {
@@ -148,11 +274,13 @@ function buildSnapshotMarkdown({ generatedAt, tables, schemaRows, tableSamples }
 async function writeExplorerSnapshot(pool) {
   const schemaRows = await fetchSchema(pool);
   const tables = await getTables(pool);
-  const tableSamples = {};
+  const rawTableSamples = {};
 
   for (const tableName of tables) {
-    tableSamples[tableName] = await getSampleRows(pool, tableName);
+    rawTableSamples[tableName] = await getSampleRows(pool, tableName);
   }
+
+  const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
 
   const markdown = buildSnapshotMarkdown({
     generatedAt: new Date(),
