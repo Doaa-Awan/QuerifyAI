@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ChatBot from './components/chat/ChatBot';
 import ERDModal from './components/ERDModal';
-import { HiOutlineSquares2X2 } from 'react-icons/hi2';
+import { HiOutlineSquares2X2, HiOutlineTableCells, HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+
+function columnTooltipKey(tableName, columnName) {
+  return `${tableName}\0${columnName}`;
+}
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedTables, setExpandedTables] = useState({});
   const [erdOpen, setErdOpen] = useState(false);
+  const [columnTooltip, setColumnTooltip] = useState(null);
+  const [tooltipPinned, setTooltipPinned] = useState(false);
+  const tooltipCloseRef = useRef(null);
 
   const handleBack = () => {
     if (typeof onExit === 'function') {
@@ -25,32 +32,82 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
     }));
   };
 
+  const tooltipKey = columnTooltip
+    ? columnTooltipKey(columnTooltip.tableName, columnTooltip.columnName)
+    : null;
+
+  const showTooltip = (tableName, column) => {
+    setColumnTooltip({
+      tableName,
+      columnName: column.name,
+      dataType: column.dataType,
+    });
+  };
+
+  const hideTooltip = () => {
+    if (!tooltipPinned) setColumnTooltip(null);
+  };
+
+  const toggleTooltipPin = (tableName, column) => {
+    const key = columnTooltipKey(tableName, column.name);
+    const currentKey = columnTooltip ? columnTooltipKey(columnTooltip.tableName, columnTooltip.columnName) : null;
+    if (currentKey === key) {
+      setTooltipPinned(false);
+      setColumnTooltip(null);
+    } else {
+      setColumnTooltip({ tableName, columnName: column.name, dataType: column.dataType });
+      setTooltipPinned(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!tooltipPinned) return;
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setTooltipPinned(false);
+        setColumnTooltip(null);
+      }
+    };
+    const handleClickOutside = (e) => {
+      if (tooltipCloseRef.current && !tooltipCloseRef.current.contains(e.target)) {
+        setTooltipPinned(false);
+        setColumnTooltip(null);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    window.addEventListener('click', handleClickOutside, true);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('click', handleClickOutside, true);
+    };
+  }, [tooltipPinned]);
+
   return (
-    <div className='db-explorer-shell'>
-      <header className='db-explorer-header'>
-        <div>
-          <p className='eyebrow'>AI DB Explorer</p>
+    <div className="db-explorer-shell">
+      <header className="db-explorer-header">
+        <div className="db-explorer-branding">
+          <p className="eyebrow">AI DB Explorer</p>
           <h2>Ask the database</h2>
-          <p className='subtitle'>Use plain language to explore tables, rows, and relationships.</p>
-          <div className="db-explorer-header-actions">
-            <button
-              className="btn ghost erd-trigger"
-              type="button"
-              onClick={() => setErdOpen(true)}
-              title="View entity relationship diagram"
-            >
-              <HiOutlineSquares2X2 />
-              <span>View ERD</span>
-            </button>
-            <button
-              className='btn ghost chat-back'
-              type='button'
-              onClick={handleBack}
-            >
-              Back
-            </button>
-          </div>
+          <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
         </div>
+        <nav className="db-explorer-nav" aria-label="Explorer actions">
+          <button
+            className="btn ghost btn-nav erd-trigger"
+            type="button"
+            onClick={() => setErdOpen(true)}
+            title="View entity relationship diagram"
+          >
+            <HiOutlineSquares2X2 aria-hidden />
+            <span>View ERD</span>
+          </button>
+          <button
+            className="btn ghost btn-nav btn-back"
+            type="button"
+            onClick={handleBack}
+          >
+            Back
+          </button>
+        </nav>
       </header>
 
       {erdOpen && (
@@ -58,68 +115,90 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
       )}
 
       <div className={`db-explorer-body ${isCollapsed ? 'collapsed' : ''}`}>
-        <section className='db-main'>
+        <section className="db-main">
           <ChatBot />
         </section>
 
         <aside
           className={`db-sidebar ${isCollapsed ? 'collapsed' : ''}`}
-          onClick={() => setIsCollapsed((prev) => !prev)}
+          aria-label="Schema tables"
         >
           <button
-            className='sidebar-toggle'
-            type='button'
-            onClick={(event) => {
-              event.stopPropagation();
-              setIsCollapsed((prev) => !prev);
-            }}
+            className="sidebar-toggle"
+            type="button"
+            onClick={() => setIsCollapsed((prev) => !prev)}
             aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? 'Expand schema panel' : 'Collapse schema panel'}
           >
-            {isCollapsed ? '>' : '<'}
-          </button>
-          <div className='sidebar-header'>
-            <div>
-              <h3>Tables</h3>
-              <p className='sidebar-meta'>{tables.length} total</p>
-            </div>
-          </div>
-          <div className='table-list'>
-            {tables.length === 0 ? (
-              <p className='empty-state'>No tables found.</p>
+            {isCollapsed ? (
+              <HiChevronLeft aria-hidden />
             ) : (
-              <ul>
-                {tables.map((table) => (
-                  <li
-                    key={table.name}
-                    className='table-item'
-                  >
-                    <button
-                      className='table-row'
-                      type='button'
-                      onClick={(event) => toggleTable(event, table.name)}
-                    >
-                      <span className='table-name'>{table.name}</span>
-                      <span className='count'>{table.columnCount} cols</span>
-                    </button>
-                    {expandedTables[table.name] && table.columns?.length ? (
-                      <ul className='column-list'>
-                        {table.columns.map((column) => (
-                          <li key={`${table.name}.${column.name}`}>
-                            <span className='column-name'>{column.name}</span>
-                            <span className='column-meta'>
-                              {column.dataType}
-                              {column.isPrimary ? <span className='key-badge'>PK</span> : null}
-                              {column.isForeign ? <span className='key-badge'>FK{column.foreignTable ? ` → ${column.foreignTable}` : ''}</span> : null}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
+              <HiChevronRight aria-hidden />
             )}
+          </button>
+          <div className="sidebar-inner">
+            <div className="sidebar-header">
+              <HiOutlineTableCells className="sidebar-icon" aria-hidden />
+              <span className="sidebar-title">Schema</span>
+              <span className="sidebar-count" aria-label={`${tables.length} tables`}>
+                {tables.length}
+              </span>
+            </div>
+            <div className="table-list">
+              {tables.length === 0 ? (
+                <p className="empty-state">No tables found.</p>
+              ) : (
+                <ul>
+                  {tables.map((table) => (
+                    <li key={table.name} className="table-item">
+                      <button
+                        className={`table-row ${expandedTables[table.name] ? 'expanded' : ''}`}
+                        type="button"
+                        onClick={(e) => toggleTable(e, table.name)}
+                      >
+                        <span className="table-name">{table.name}</span>
+                        <span className="count">{table.columnCount}</span>
+                      </button>
+                      {expandedTables[table.name] && table.columns?.length ? (
+                        <ul className="column-list" ref={tooltipPinned ? tooltipCloseRef : null}>
+                          {table.columns.map((column) => {
+                            const key = columnTooltipKey(table.name, column.name);
+                            const isActive = tooltipKey === key;
+                            return (
+                              <li
+                                key={`${table.name}.${column.name}`}
+                                className="column-row"
+                                onMouseEnter={() => showTooltip(table.name, column)}
+                                onMouseLeave={hideTooltip}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleTooltipPin(table.name, column);
+                                }}
+                              >
+                                <span className="column-name">{column.name}</span>
+                                <span className="column-meta">
+                                  {column.isPrimary && <span className="key-badge pk">PK</span>}
+                                  {column.isForeign && (
+                                    <span className="key-badge fk">
+                                      FK{column.foreignTable ? ` → ${column.foreignTable}` : ''}
+                                    </span>
+                                  )}
+                                </span>
+                                {isActive && (
+                                  <span className="column-type-tooltip" role="tooltip">
+                                    {columnTooltip.dataType}
+                                  </span>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </aside>
       </div>
