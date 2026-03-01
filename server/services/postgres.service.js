@@ -6,10 +6,15 @@ import { postgresRepository } from '../repositories/postgres.repository.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import OpenAI from 'openai';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const explorerPromptPath = path.resolve(__dirname, '../prompts/db-explorer-context.md');
+const tableMetadataPath = path.resolve(__dirname, '../prompts/table-metadata.json');
 
 function isMissingRequiredConfig(config) {
   return !config || !config.host || !config.user || !config.database;
@@ -271,9 +276,60 @@ function buildSnapshotMarkdown({ generatedAt, tables, schemaRows, tableSamples }
   return lines.join('\n');
 }
 
+async function generateTableDescriptions(tables, schemaRows) {
+  const openai = new OpenAI({
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY,
+  });
+
+  console.log('[snapshot] generating descriptions for tables:', tables);
+
+  const tableList = tables
+    .map((tableName) => {
+      const cols = schemaRows
+        .filter((r) => r.table_name === tableName)
+        .map((r) => r.column_name)
+        .join(', ');
+      return `- ${tableName}: columns are ${cols}`;
+    })
+    .join('\n');
+
+  const prompt = `For each database table below, write one concise sentence describing what it stores. Respond with ONLY a JSON object mapping table names to descriptions, e.g. {"table1": "Stores ...", "table2": "Tracks ..."}.
+
+Tables:
+${tableList}`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.2,
+    max_tokens: 200,
+  });
+
+  const content = response.choices?.[0]?.message?.content ?? '{}';
+  const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();
+  const descriptions = JSON.parse(jsonStr);
+  console.log('[snapshot] descriptions received:', descriptions);
+  return descriptions;
+}
+
+async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptions }) {
+  const metadata = {};
+  for (const tableName of tables) {
+    metadata[tableName] = {
+      description: descriptions[tableName] ?? '',
+      columns: schemaRows.filter((r) => r.table_name === tableName),
+      sampleRows: tableSamples[tableName] ?? [],
+    };
+  }
+  await fs.writeFile(tableMetadataPath, JSON.stringify(metadata, null, 2), 'utf8');
+  console.log('[snapshot] table-metadata.json written →', tableMetadataPath);
+}
+
 async function writeExplorerSnapshot(pool) {
   const schemaRows = await fetchSchema(pool);
   const tables = await getTables(pool);
+  console.log('[snapshot] tables found:', tables);
   const rawTableSamples = {};
 
   for (const tableName of tables) {
@@ -291,11 +347,25 @@ async function writeExplorerSnapshot(pool) {
 
   await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
   await fs.writeFile(explorerPromptPath, markdown, 'utf8');
+  console.log('[snapshot] db-explorer-context.md written');
+
+  let descriptions = {};
+  try {
+    descriptions = await generateTableDescriptions(tables, schemaRows);
+  } catch (err) {
+    console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
+  }
+  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
 }
 
 async function clearExplorerSnapshotFile() {
   await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
   await fs.writeFile(explorerPromptPath, '', 'utf8');
+  try {
+    await fs.unlink(tableMetadataPath);
+  } catch {
+    // File may not exist, that's fine
+  }
 }
 
 // Public interface
