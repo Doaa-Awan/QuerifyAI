@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ChatBot from './components/chat/ChatBot';
 import ERDModal from './components/ERDModal';
-import { HiOutlineSquares2X2, HiOutlineTableCells, HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { HiOutlineSquares2X2, HiOutlineTableCells, HiChevronLeft, HiChevronRight, HiChevronDown } from 'react-icons/hi2';
 
 function columnTooltipKey(tableName, columnName) {
   return `${tableName}\0${columnName}`;
@@ -156,6 +156,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
                         type="button"
                         onClick={(e) => toggleTable(e, table.name)}
                       >
+                        <HiChevronDown className="table-row-chevron" aria-hidden />
                         <span className="table-name">{table.name}</span>
                         <span className="count">{table.columnCount}</span>
                       </button>
