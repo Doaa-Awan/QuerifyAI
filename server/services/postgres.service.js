@@ -27,7 +27,8 @@ function createPostgresClient(config) {
     user: config.user,
     password: config.password,
     database: config.database,
-    ssl: config.ssl ?? false,
+    ssl: config.ssl ? { rejectUnauthorized: false } : false,
+    ...(config.options && { options: config.options }),
   });
 }
 
@@ -378,6 +379,7 @@ export const postgresService = {
       password: process.env.DEMO_DB_PASSWORD,
       database: process.env.DEMO_DB_NAME,
       ssl: process.env.DEMO_DB_SSL === 'true' || false,
+      options: process.env.DEMO_DB_OPTIONS,
     };
 
     if (isMissingRequiredConfig(demoCfg)) {
