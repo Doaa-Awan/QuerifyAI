@@ -23,7 +23,11 @@ export const chatController = {
     try {
       const { prompt, conversationId } = req.body;
       const response = await chatService.sendMessage(prompt, conversationId);
-      res.json({ message: response.message });
+      res.json({
+        sql: response.sql,
+        explanation: response.explanation,
+        tables_used: response.tables_used,
+      });
     } catch (error) {
       res.status(500).json({ error: 'Failed to generate a response' });
     }
