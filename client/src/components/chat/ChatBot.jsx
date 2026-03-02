@@ -6,7 +6,7 @@ import ChatInput from './ChatInput';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-const ChatBot = () => {
+const ChatBot = ({ onTablesUsed }) => {
   const [messages, setMessages] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +22,14 @@ const ChatBot = () => {
         prompt,
         conversationId: conversationId.current,
       });
-      setMessages((prev) => [...prev, { role: 'bot', content: data.message }]);
+      const { sql, explanation, tables_used } = data;
+      const content = sql
+        ? `${explanation}\n\n\`\`\`sql\n${sql}\n\`\`\``
+        : explanation;
+      setMessages((prev) => [...prev, { role: 'bot', content }]);
+      if (typeof onTablesUsed === 'function' && tables_used?.length) {
+        onTablesUsed(tables_used);
+      }
     } catch (err) {
       console.error('Error submitting prompt:', err);
       setError('Something went wrong. Please try again.');

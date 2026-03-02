@@ -630,6 +630,11 @@
   border-color: var(--line);
 }
 
+.table-row.highlighted {
+  border-left: 2px solid var(--accent);
+  padding-left: calc(0.65rem - 2px);
+}
+
 .table-name {
   font-family: ui-monospace, 'SF Mono', monospace;
   font-size: 0.85rem;

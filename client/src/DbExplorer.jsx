@@ -10,6 +10,7 @@ function columnTooltipKey(tableName, columnName) {
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedTables, setExpandedTables] = useState({});
+  const [highlightedTables, setHighlightedTables] = useState(new Set());
   const [erdOpen, setErdOpen] = useState(false);
   const [columnTooltip, setColumnTooltip] = useState(null);
   const [tooltipPinned, setTooltipPinned] = useState(false);
@@ -23,6 +24,8 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
       onBack();
     }
   };
+
+  const handleTablesUsed = (tables) => setHighlightedTables(new Set(tables));
 
   const toggleTable = (event, tableName) => {
     event.stopPropagation();
@@ -116,7 +119,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
 
       <div className={`db-explorer-body ${isCollapsed ? 'collapsed' : ''}`}>
         <section className="db-main">
-          <ChatBot />
+          <ChatBot onTablesUsed={handleTablesUsed} />
         </section>
 
         <aside
@@ -152,7 +155,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
                   {tables.map((table) => (
                     <li key={table.name} className="table-item">
                       <button
-                        className={`table-row ${expandedTables[table.name] ? 'expanded' : ''}`}
+                        className={`table-row ${expandedTables[table.name] ? 'expanded' : ''} ${highlightedTables.has(table.name) ? 'highlighted' : ''}`}
                         type="button"
                         onClick={(e) => toggleTable(e, table.name)}
                       >
