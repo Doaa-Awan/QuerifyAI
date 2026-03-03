@@ -17,9 +17,12 @@ This tool connects to any PostgreSQL database, introspects the schema automatica
 ## What It Does
 
 - **Schema introspection** — connects to any PostgreSQL database and dynamically maps all tables, columns, data types, and foreign key relationships with zero manual configuration
-- **Natural language queries** — ask questions in plain English and get accurate SQL back, with live schema context injected into the prompt so the AI understands your specific database structure
-- **ERD visualization** — renders an interactive entity-relationship diagram from live schema data, giving you an instant visual model of any connected database
-- **Query safety** — read-only connections only, SELECT queries enforced
+- **Natural language to SQL** — ask questions in plain English, get accurate SQL back with explanation, then run the query and see results inline — no copy-pasting into another tool
+- **Two-pass AI routing** — selects relevant tables before SQL generation to reduce token cost and improve accuracy; caches table selections for follow-up queries
+- **ERD visualization** — renders an interactive entity-relationship diagram using a BFS layout algorithm, with pan/zoom and draggable table cards
+- **Query history** — session history of all queries with one-click copy and SQL export
+- **PII safety** — masks sensitive columns (email, phone, names) in sample data before sending to the AI
+- **Query safety** — read-only connections only, SELECT-only enforcement on all executed queries
 
 ---
 
@@ -35,10 +38,10 @@ This tool solves that by introspecting your schema first and injecting the full 
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React, TypeScript, Vite, Tailwind CSS |
-| Backend | Node.js, Express |
-| Database | PostgreSQL |
-| AI | OpenAI API (via OpenRouter) |
+| Frontend | React 19, Vite, custom CSS (dark theme), react-hook-form, react-markdown |
+| Backend | Node.js, Express 5, Zod, express-rate-limit |
+| Database | PostgreSQL (pg driver, connection pooling) |
+| AI | gpt-4o-mini via OpenRouter (two-pass routing, structured JSON output) |
 
 ---
 
@@ -120,15 +123,17 @@ The hosted demo comes pre-connected to a sample PostgreSQL database you can quer
 ```
 ai-db-explorer/
 ├── server/
-│   ├── routes/          # API endpoints
-│   ├── controllers/     # Request handling
-│   ├── services/        # Schema introspection, query generation
+│   ├── controllers/     # Request handling + Zod validation
+│   ├── services/        # Business logic (AI routing, schema introspection)
+│   ├── repositories/    # State (connection pool, conversation history)
+│   ├── middleware/      # Rate limiting
+│   ├── db/              # PostgreSQL query helpers
+│   ├── prompts/         # AI prompt templates (auto-generated schema context)
 │   └── server.js        # Entry point
 ├── client/
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── pages/       # Page views
-│   │   └── App.tsx      # Root component
+│   │   ├── components/  # React components (chat, ERD, results)
+│   │   └── App.jsx      # Connection screen
 │   └── ...
 └── README.md
 ```
