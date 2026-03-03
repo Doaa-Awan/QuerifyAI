@@ -3,7 +3,7 @@
 import express from 'express';
 import { chatController } from './controllers/chat.controller.js';
 import { postgresController } from './controllers/postgres.controller.js';
-import { chatLimiter, snapshotLimiter } from './middleware/rateLimiter.js';
+import { chatLimiter, snapshotLimiter, executeLimiter } from './middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -20,5 +20,6 @@ router.get('/health/db', postgresController.getHealth);
 router.get('/db/schema', postgresController.getSchema);
 router.post('/db/explorer-context/snapshot', snapshotLimiter, postgresController.buildExplorerSnapshot);
 router.post('/db/explorer-context/clear', postgresController.clearExplorerSnapshot);
+router.post('/db/execute', executeLimiter, postgresController.executeQuery);
 
 export default router;

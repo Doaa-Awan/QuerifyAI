@@ -26,3 +26,13 @@ export const snapshotLimiter = rateLimit({
   message: 'Snapshot limit reached. Please try again after 1 hour.',
   handler: rateLimitHandler,
 });
+
+// 50 query executions per IP per 24 hours
+export const executeLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: 50,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Daily execution limit reached. Please try again tomorrow.',
+  handler: rateLimitHandler,
+});

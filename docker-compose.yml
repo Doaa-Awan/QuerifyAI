@@ -1,0 +1,21 @@
+services:
+  server:
+    build: ./server
+    env_file: ./server/.env
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+
+  client:
+    build: ./client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

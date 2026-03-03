@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import ChatBot from './components/chat/ChatBot';
 import ERDModal from './components/ERDModal';
+import SqlEditor from './components/SqlEditor';
 import { HiOutlineSquares2X2, HiOutlineTableCells, HiChevronLeft, HiChevronRight, HiChevronDown } from 'react-icons/hi2';
 
 function columnTooltipKey(tableName, columnName) {
@@ -14,6 +15,8 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [erdOpen, setErdOpen] = useState(false);
   const [columnTooltip, setColumnTooltip] = useState(null);
   const [tooltipPinned, setTooltipPinned] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [latestSql, setLatestSql] = useState(null);
   const tooltipCloseRef = useRef(null);
 
   const handleBack = () => {
@@ -85,6 +88,12 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
     };
   }, [tooltipPinned]);
 
+  // When AI generates SQL, open the editor and populate it
+  const handleQueryAdded = ({ sql }) => {
+    setLatestSql(sql);
+    setEditorOpen(true);
+  };
+
   return (
     <div className="db-explorer-shell">
       <header className="db-explorer-header">
@@ -94,6 +103,14 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
           <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
         </div>
         <nav className="db-explorer-nav" aria-label="Explorer actions">
+          <button
+            className={`btn ghost btn-nav ${editorOpen ? 'active-nav' : ''}`}
+            type="button"
+            onClick={() => setEditorOpen((prev) => !prev)}
+            title="Toggle SQL editor"
+          >
+            <span>{editorOpen ? 'Hide Editor' : 'SQL Editor'}</span>
+          </button>
           <button
             className="btn ghost btn-nav erd-trigger"
             type="button"
@@ -118,9 +135,18 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
       )}
 
       <div className={`db-explorer-body ${isCollapsed ? 'collapsed' : ''}`}>
-        <section className="db-main">
-          <ChatBot onTablesUsed={handleTablesUsed} />
+        <section className={`db-main ${editorOpen ? 'with-editor' : ''}`}>
+          <ChatBot
+            onTablesUsed={handleTablesUsed}
+            onQueryAdded={handleQueryAdded}
+          />
         </section>
+
+        {editorOpen && (
+          <section className="db-editor-pane">
+            <SqlEditor initialSql={latestSql} />
+          </section>
+        )}
 
         <aside
           className={`db-sidebar ${isCollapsed ? 'collapsed' : ''}`}

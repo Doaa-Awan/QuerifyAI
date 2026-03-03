@@ -455,4 +455,34 @@ export const postgresService = {
       return { ok: false, status: 500, body: { error: err.message } };
     }
   },
+  async executeQuery(sql) {
+    const pool = postgresRepository.getPool();
+    if (!pool || !postgresRepository.isAvailable()) {
+      return { ok: false, status: 503, body: { error: 'DB connection not available' } };
+    }
+
+    // Enforce read-only: only SELECT and WITH (CTEs) are permitted
+    const trimmed = sql.trim();
+    if (!/^(SELECT|WITH)\s/i.test(trimmed)) {
+      return { ok: false, status: 400, body: { error: 'Only SELECT queries are permitted' } };
+    }
+
+    try {
+      const start = Date.now();
+      const result = await pool.query(trimmed);
+      const executionTimeMs = Date.now() - start;
+      const columns = (result.fields ?? []).map((f) => ({ name: f.name }));
+      return {
+        ok: true,
+        body: {
+          rows: result.rows.slice(0, 100),
+          columns,
+          rowCount: result.rowCount ?? result.rows.length,
+          executionTimeMs,
+        },
+      };
+    } catch (err) {
+      return { ok: false, status: 400, body: { error: err.message } };
+    }
+  },
 };
