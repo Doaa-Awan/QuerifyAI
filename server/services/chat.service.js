@@ -183,16 +183,44 @@ export const chatService = {
       model: 'gpt-4o-mini',
       messages,
       temperature: 0.2,
-      max_tokens: 200,
+      max_tokens: 800,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'query_response',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              sql: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+              explanation: { type: 'string' },
+              tables_used: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['sql', 'explanation', 'tables_used'],
+            additionalProperties: false,
+          },
+        },
+      },
     });
 
-    const assistantMessage = response.choices?.[0]?.message?.content ?? '';
+    const rawContent = response.choices?.[0]?.message?.content ?? '';
+
+    let parsed;
+    try {
+      parsed = JSON.parse(rawContent);
+    } catch {
+      parsed = { sql: null, explanation: rawContent, tables_used: [] };
+    }
+
+    // Store the raw JSON string so follow-up context is preserved
     conversationRepository.appendMessage(conversationId, 'user', prompt);
-    conversationRepository.appendMessage(conversationId, 'assistant', assistantMessage);
+    conversationRepository.appendMessage(conversationId, 'assistant', rawContent);
 
     return {
       id: response.id,
-      message: assistantMessage,
+      sql: parsed.sql ?? null,
+      explanation: parsed.explanation ?? '',
+      tables_used: Array.isArray(parsed.tables_used) ? parsed.tables_used : [],
     };
   },
 };

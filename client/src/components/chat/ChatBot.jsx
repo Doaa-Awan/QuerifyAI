@@ -6,7 +6,7 @@ import ChatInput from './ChatInput';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-const ChatBot = () => {
+const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
   const [messages, setMessages] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [error, setError] = useState('');
@@ -14,6 +14,9 @@ const ChatBot = () => {
 
   const onSubmit = async ({ prompt }) => {
     try {
+      if (messages.length === 0 && typeof onFirstMessage === 'function') {
+        onFirstMessage();
+      }
       setMessages((prev) => [...prev, { role: 'user', content: prompt }]);
       setIsBotTyping(true);
       setError('');
@@ -22,7 +25,14 @@ const ChatBot = () => {
         prompt,
         conversationId: conversationId.current,
       });
-      setMessages((prev) => [...prev, { role: 'bot', content: data.message }]);
+      const { sql, explanation, tables_used } = data;
+      const content = sql
+        ? `${explanation}\n\n\`\`\`sql\n${sql}\n\`\`\``
+        : explanation;
+      setMessages((prev) => [...prev, { role: 'bot', content }]);
+      if (typeof onTablesUsed === 'function' && tables_used?.length) {
+        onTablesUsed(tables_used);
+      }
     } catch (err) {
       console.error('Error submitting prompt:', err);
       setError('Something went wrong. Please try again.');
@@ -40,8 +50,8 @@ const ChatBot = () => {
       {/* <div className='chat-messages'>
         <div className='chat-message muted'></div>
       </div> */}
-      <div>
-        <div>
+      <div className='chat-body'>
+        <div className='chat-messages-area'>
           <ChatMessages messages={messages} />
           {isBotTyping && <TypingIndicator />}
           {error && <p className='error-message'>{error}</p>}
