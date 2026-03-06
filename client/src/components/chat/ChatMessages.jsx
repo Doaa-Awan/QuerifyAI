@@ -2,10 +2,13 @@ import ReactMarkdown from 'react-markdown';
 import { useEffect, useRef } from 'react';
 
 const ChatMessages = ({ messages }) => {
-  const lastMessageRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const area = containerRef.current?.closest('.chat-messages-area');
+    if (area) {
+      area.scrollTo({ top: area.scrollHeight, behavior: 'smooth' });
+    }
   }, [messages]);
 
   const onCopyMessage = (e) => {
@@ -17,12 +20,11 @@ const ChatMessages = ({ messages }) => {
   };
 
   return (
-    <div className='chat-messages'>
+    <div className='chat-messages' ref={containerRef}>
       {messages.map((message, index) => (
         <div
           key={index}
           onCopy={onCopyMessage}
-          ref={index === messages.length - 1 ? lastMessageRef : null}
           className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
         >
           <ReactMarkdown>{message.content}</ReactMarkdown>

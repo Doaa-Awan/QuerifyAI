@@ -6,7 +6,7 @@ import ChatInput from './ChatInput';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-const ChatBot = ({ onTablesUsed }) => {
+const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
   const [messages, setMessages] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [error, setError] = useState('');
@@ -14,6 +14,9 @@ const ChatBot = ({ onTablesUsed }) => {
 
   const onSubmit = async ({ prompt }) => {
     try {
+      if (messages.length === 0 && typeof onFirstMessage === 'function') {
+        onFirstMessage();
+      }
       setMessages((prev) => [...prev, { role: 'user', content: prompt }]);
       setIsBotTyping(true);
       setError('');
@@ -47,8 +50,8 @@ const ChatBot = ({ onTablesUsed }) => {
       {/* <div className='chat-messages'>
         <div className='chat-message muted'></div>
       </div> */}
-      <div>
-        <div>
+      <div className='chat-body'>
+        <div className='chat-messages-area'>
           <ChatMessages messages={messages} />
           {isBotTyping && <TypingIndicator />}
           {error && <p className='error-message'>{error}</p>}

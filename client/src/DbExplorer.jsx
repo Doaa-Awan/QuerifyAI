@@ -9,6 +9,7 @@ function columnTooltipKey(tableName, columnName) {
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hasMessages, setHasMessages] = useState(false);
   const [expandedTables, setExpandedTables] = useState({});
   const [highlightedTables, setHighlightedTables] = useState(new Set());
   const [erdOpen, setErdOpen] = useState(false);
@@ -86,9 +87,9 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
   }, [tooltipPinned]);
 
   return (
-    <div className="db-explorer-shell">
+    <div className={`db-explorer-shell${hasMessages ? ' has-messages' : ''}`}>
       <header className="db-explorer-header">
-        <div className="db-explorer-branding">
+        <div className={`db-explorer-branding${hasMessages ? ' collapsed' : ''}`}>
           <p className="eyebrow">AI DB Explorer</p>
           <h2>Ask the database</h2>
           <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
@@ -119,7 +120,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
 
       <div className={`db-explorer-body ${isCollapsed ? 'collapsed' : ''}`}>
         <section className="db-main">
-          <ChatBot onTablesUsed={handleTablesUsed} />
+          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} />
         </section>
 
         <aside
