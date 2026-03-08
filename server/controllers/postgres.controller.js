@@ -2,6 +2,7 @@
 // controller for postgres-related endpoints
 
 import { postgresService } from '../services/postgres.service.js';
+import { schemaStore } from '../services/schemaStore.js';
 import z from 'zod';
 
 const connectSchema = z
@@ -80,6 +81,25 @@ export const postgresController = {
     }
 
     res.status(result.status || 500).json(result.body);
+  },
+  getIntrospectedSchema(req, res) {
+    if (!schemaStore.isAvailable()) {
+      res.status(503).json({ error: 'No schema available. Connect to a database first.' });
+      return;
+    }
+
+    const { tables } = schemaStore.get();
+
+    const relationships = tables.flatMap((table) =>
+      table.foreignKeys.map((fk) => ({
+        fromTable: table.name,
+        fromColumn: fk.column,
+        toTable: fk.referencedTable,
+        toColumn: fk.referencedColumn,
+      }))
+    );
+
+    res.json({ tables, relationships });
   },
   async connectAndIntrospect(req, res) {
     const parseResult = connectSchema.safeParse(req.body);

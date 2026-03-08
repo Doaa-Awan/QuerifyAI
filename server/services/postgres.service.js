@@ -3,6 +3,7 @@
 import { Pool } from 'pg';
 import { getSchema as fetchSchema, getSampleRows, getTables } from '../db/postgres.js';
 import { introspectionService } from './introspection.js';
+import { schemaStore } from './schemaStore.js';
 import { postgresRepository } from '../repositories/postgres.repository.js';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -361,6 +362,7 @@ async function writeExplorerSnapshot(pool) {
 }
 
 async function clearExplorerSnapshotFile() {
+  schemaStore.clear();
   await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
   await fs.writeFile(explorerPromptPath, '', 'utf8');
   try {
@@ -482,6 +484,7 @@ export const postgresService = {
         description: descriptions[t.name] ?? '',
       }));
 
+      schemaStore.set({ tables: tablesWithDescriptions, descriptions });
       return { ok: true, tables: tablesWithDescriptions, descriptions };
     } catch (err) {
       return { ok: false, error: err.message, status: 500 };

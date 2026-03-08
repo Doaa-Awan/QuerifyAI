@@ -19,6 +19,7 @@ router.post('/api/connect', postgresController.connectAndIntrospect);
 router.get('/db/status', postgresController.getStatus);
 router.get('/health/db', postgresController.getHealth);
 router.get('/db/schema', postgresController.getSchema);
+router.get('/api/schema', postgresController.getIntrospectedSchema);
 router.post('/db/explorer-context/snapshot', snapshotLimiter, postgresController.buildExplorerSnapshot);
 router.post('/db/explorer-context/clear', postgresController.clearExplorerSnapshot);
 
