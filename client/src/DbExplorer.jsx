@@ -88,31 +88,34 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
 
   return (
     <div className={`db-explorer-shell${hasMessages ? ' has-messages' : ''}`}>
-      <header className="db-explorer-header">
-        <div className={`db-explorer-branding${hasMessages ? ' collapsed' : ''}`}>
-          <p className="eyebrow">AI DB Explorer</p>
-          <h2>Ask the database</h2>
-          <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
-        </div>
-        <nav className="db-explorer-nav" aria-label="Explorer actions">
-          <button
-            className="btn ghost btn-nav erd-trigger"
-            type="button"
-            onClick={() => setErdOpen(true)}
-            title="View entity relationship diagram"
-          >
-            <HiOutlineSquares2X2 aria-hidden />
-            <span>View ERD</span>
-          </button>
-          <button
-            className="btn ghost btn-nav btn-back"
-            type="button"
-            onClick={handleBack}
-          >
-            Back
-          </button>
-        </nav>
-      </header>
+      <nav className={`db-explorer-nav${hasMessages ? ' db-explorer-nav--floating' : ''}`} aria-label="Explorer actions">
+        <button
+          className="btn ghost btn-nav btn-back"
+          type="button"
+          onClick={handleBack}
+        >
+          Back
+        </button>
+        <button
+          className="btn ghost btn-nav erd-trigger"
+          type="button"
+          onClick={() => setErdOpen(true)}
+          title="View entity relationship diagram"
+        >
+          <HiOutlineSquares2X2 aria-hidden />
+          <span>View ERD</span>
+        </button>
+      </nav>
+
+      {!hasMessages && (
+        <header className="db-explorer-header">
+          <div className="db-explorer-branding">
+            <p className="eyebrow">AI DB Explorer</p>
+            <h2>Ask the database</h2>
+            <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
+          </div>
+        </header>
+      )}
 
       {erdOpen && (
         <ERDModal tables={tables} onClose={() => setErdOpen(false)} />
