@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import TypingIndicator from './TypingIndicator';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
@@ -7,10 +7,27 @@ import ChatInput from './ChatInput';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('querify_messages');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [error, setError] = useState('');
-  const conversationId = useRef(crypto.randomUUID());
+  const conversationId = useRef(
+    localStorage.getItem('querify_conversation_id') ?? (() => {
+      const id = crypto.randomUUID();
+      localStorage.setItem('querify_conversation_id', id);
+      return id;
+    })()
+  );
+
+  useEffect(() => {
+    localStorage.setItem('querify_messages', JSON.stringify(messages));
+  }, [messages]);
 
   const onSubmit = async ({ prompt }) => {
     try {

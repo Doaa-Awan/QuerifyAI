@@ -9,7 +9,14 @@ function columnTooltipKey(tableName, columnName) {
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [hasMessages, setHasMessages] = useState(false);
+  const [hasMessages, setHasMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('querify_messages');
+      return saved ? JSON.parse(saved).length > 0 : false;
+    } catch {
+      return false;
+    }
+  });
   const [expandedTables, setExpandedTables] = useState({});
   const [highlightedTables, setHighlightedTables] = useState(new Set());
   const [erdOpen, setErdOpen] = useState(false);

@@ -13,8 +13,17 @@ function App() {
   const [database, setDatabase] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [dbStatus, setDbStatus] = useState('unknown');
-  const [showExplorer, setShowExplorer] = useState(false);
-  const [schema, setSchema] = useState([]);
+  const [showExplorer, setShowExplorer] = useState(
+    () => localStorage.getItem('querify_connected') === 'true'
+  );
+  const [schema, setSchema] = useState(() => {
+    try {
+      const saved = localStorage.getItem('querify_schema');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [activeDb, setActiveDb] = useState('postgres');
 
   const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -72,6 +81,7 @@ function App() {
         .sort((a, b) => a.name.localeCompare(b.name));
 
       setSchema(tables);
+      localStorage.setItem('querify_schema', JSON.stringify(tables));
       return tables;
     } catch (err) {
       console.error('Failed to fetch schema', err);
@@ -105,6 +115,7 @@ function App() {
       if (available) {
         await fetchSchema();
         await generateExplorerContext();
+        localStorage.setItem('querify_connected', 'true');
         setShowExplorer(true);
       }
     } catch (err) {
@@ -123,6 +134,7 @@ function App() {
       if (available) {
         await fetchSchema();
         await generateExplorerContext();
+        localStorage.setItem('querify_connected', 'true');
         setShowExplorer(true);
       }
     } catch (err) {
@@ -139,6 +151,7 @@ function App() {
       if (available) {
         await fetchSchema();
         await generateExplorerContext();
+        localStorage.setItem('querify_connected', 'true');
         setShowExplorer(true);
       }
     })();
@@ -148,8 +161,20 @@ function App() {
     return (
       <DbExplorer
         tables={schema}
-        onBack={() => setShowExplorer(false)}
-        onExit={clearExplorerContext}
+        onBack={() => {
+          localStorage.removeItem('querify_connected');
+          localStorage.removeItem('querify_messages');
+          localStorage.removeItem('querify_conversation_id');
+          localStorage.removeItem('querify_schema');
+          setShowExplorer(false);
+        }}
+        onExit={() => {
+          localStorage.removeItem('querify_connected');
+          localStorage.removeItem('querify_messages');
+          localStorage.removeItem('querify_conversation_id');
+          localStorage.removeItem('querify_schema');
+          clearExplorerContext();
+        }}
       />
     );
   }
