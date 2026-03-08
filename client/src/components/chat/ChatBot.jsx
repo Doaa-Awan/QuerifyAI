@@ -4,7 +4,7 @@ import TypingIndicator from './TypingIndicator';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
   const [messages, setMessages] = useState([]);
