@@ -356,9 +356,6 @@
 
 .chat-window {
   width: 100%;
-  max-width: 860px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .chat-header {
@@ -383,6 +380,7 @@
   gap: 10px;
   overflow-y: auto;
   max-height: 60vh;
+  padding: 0 360px;
 }
 
 /* Full-height chat layout — only active after first message */
@@ -407,11 +405,42 @@
   overflow-y: auto;
   padding-top: clamp(0.5rem, 1.5vw, 1rem);
   padding-bottom: 0.5rem;
+  padding-right: 10px;
+  scrollbar-gutter: stable;
 }
 
 .has-messages .chat-messages {
   max-height: none;
   overflow-y: visible;
+}
+
+/* Custom scrollbar — dark theme, thin, rounded */
+.chat-messages-area::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages-area::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages-area::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.chat-messages-area::-webkit-scrollbar-thumb:hover,
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Firefox */
+.chat-messages-area,
+.chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 
 .chat-message {
@@ -455,6 +484,7 @@
   padding: 10px;
   gap: 5px;
   align-self: flex-start;
+  margin-left: 360px;
 }
 
 .bot-typing-dot {
@@ -491,8 +521,8 @@
   border-radius: 14px;
   background: var(--surface-strong);
   padding: 10px;
-  margin-top: 25px;
   flex-shrink: 0;
+  margin: 25px 360px 0;
 }
 
 .chat-input textarea {
