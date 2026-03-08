@@ -435,6 +435,19 @@
   color: var(--ink);
   align-self: flex-start;
   max-width: 90%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.bot-message pre {
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: pre;
+}
+
+.bot-message code {
+  white-space: pre;
+  word-break: normal;
 }
 
 .bot-typing {
