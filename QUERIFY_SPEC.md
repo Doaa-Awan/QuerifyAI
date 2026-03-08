@@ -1,7 +1,7 @@
 # Querify — AI Database Explorer
 ## Project Specification
 
-> Last updated: 2026-03-08 (session 1)
+> Last updated: 2026-03-08 (session 2)
 
 ---
 
@@ -15,7 +15,9 @@
 | `GET /api/schema` — structured schema + relationships | ✅ Done |
 | `db/postgres.js` — `is_nullable`, `getRowCounts` | ✅ Done |
 | Frontend localStorage persistence (session, schema, messages) | ✅ Done |
-| `POST /api/query` + `aiPipeline.js` | ⬜ Next |
+| Two-pass AI pipeline (`chat.service.js`) — table routing + SQL generation | ✅ Done |
+| Pipeline fixes — token limit, follow-up detection, table merging | ✅ Done |
+| `POST /api/query` endpoint (dedicated, separate from `/api/chat`) | ⬜ Todo |
 | `cache.js` — query result caching | ⬜ Todo |
 | Querify frontend components (ConnectionForm, SchemaExplorer, etc.) | ⬜ Todo |
 | ERD visualization (React Flow or D3) | ⬜ Todo |
@@ -86,7 +88,11 @@ Express Backend (Node.js)
       │
       └── OpenRouter API Proxy
                 │
-                └── Two-Pass AI Pipeline  ← aiPipeline.js (todo)
+                └── Two-Pass AI Pipeline  ← chat.service.js ✅
+                          │
+                          ├── Pass 1: table-metadata.json (names + descriptions)
+                          ├── Pass 2: focused schema context (relevant tables only)
+                          └── Per-conversation topic cache with table merging
 ```
 
 ---
@@ -170,35 +176,49 @@ passcode, token, secret, api_key, ssn, social_security, passport
 - Cleared on `clearExplorerSnapshot()` (session end)
 - Powers `GET /api/schema` without re-querying the database
 
-### 5. Two-Pass AI Query Pipeline (per query) — TODO
+### 5. Two-Pass AI Query Pipeline ✅
+
+Implemented in `server/services/chat.service.js`, served via `POST /api/chat`.
 
 **Pass 1 — Table Selection:**
 ```
-Input:  User's natural language question + all table names + AI descriptions
+Source: table-metadata.json (table names + AI descriptions + sample rows, written at connect time)
+Input:  User's natural language question + table list with descriptions
 Output: JSON array of relevant table names
-Example: ["faults", "clients", "invoices"]
+Example: ["faults", "site", "invoiceheader"]
 ```
 
 **Pass 2 — SQL Generation:**
 ```
-Input:  User's question + full schema (columns, types, FKs) for relevant tables only
+Input:  User's question + focused schema context (columns, types, FKs, sample rows for relevant tables only)
 Output: Structured JSON { sql, explanation, tables_used }
+Fallback: if Pass 1 returns null/empty, injects full db-explorer-context.md instead
 ```
 
 **Why two passes:**
-- Reduces token usage significantly on large schemas
+- Reduces token usage significantly on large schemas (23+ tables → 3-5 relevant)
 - Improves SQL accuracy by only injecting relevant context
-- Pass 1 result is cached for similar repeated queries
+- Pass 1 result is cached per conversationId for follow-up queries
 - Falls back to full schema injection if Pass 1 fails
+
+**Follow-up detection (`isFollowUpQuery`):**
+- Word list: `those`, `they`, `it`, `these`, `that`, `same`, `also`, `additionally`, `furthermore`, `what about`, `and`, `as well`, `too`, `plus`, `include`, `add`
+- Also triggers for queries of 5 words or fewer
+- On cache hit → reuse cached tables (no Pass 1 call)
+- On cache miss with existing cache → run Pass 1, then **merge** new tables with cached set (union)
 
 **Structured output format:**
 ```json
 {
-  "sql": "SELECT f.id, f.status, c.name FROM faults f JOIN clients c ON f.client_id = c.id WHERE f.status = 'open'",
-  "explanation": "Retrieves all open tickets with their associated client names.",
-  "tables_used": ["faults", "clients"]
+  "sql": "SELECT f.faultid, f.symptom, ts.tstatusdesc FROM faults f JOIN tstatus ts ON f.status = ts.tstatus WHERE ts.tstatusdesc = 'Open'",
+  "explanation": "Retrieves all open tickets with their status description.",
+  "tables_used": ["faults", "tstatus"]
 }
 ```
+
+**Files written at connect time (required by pipeline):**
+- `server/prompts/table-metadata.json` — Pass 1 source: table names, AI descriptions, columns, sample rows
+- `server/prompts/db-explorer-context.md` — full schema fallback for Pass 2
 
 ### 6. ERD Visualization — partial (custom SVG, React Flow/D3 planned)
 - Renders interactive node-based diagram from live schema data
@@ -274,8 +294,8 @@ server/
 │   ├── introspection.js             # ✅ Schema introspection engine
 │   ├── schemaStore.js               # ✅ In-memory schema persistence
 │   ├── postgres.service.js          # Connection, snapshot, connectAndIntrospect
-│   ├── chat.service.js              # Two-pass AI (legacy /api/chat)
-│   ├── aiPipeline.js                # ⬜ TODO: new two-pass pipeline for /api/query
+│   ├── chat.service.js              # ✅ Two-pass AI pipeline (POST /api/chat)
+│   ├── aiPipeline.js                # ⬜ TODO: dedicated pipeline for POST /api/query
 │   └── cache.js                     # ⬜ TODO: query result caching
 ├── repositories/
 │   ├── postgres.repository.js       # pg.Pool singleton
@@ -388,3 +408,4 @@ The demo should show three things in under 2 minutes:
 7. **Single-process only** — pg.Pool Map lives in server memory, not shared across Node processes
 8. **`primaryKey` is a single string** — composite PKs are not fully supported (first PK column is used)
 9. **`n_live_tup` row counts** — approximate; may read 0 for tables that have never been vacuumed
+10. **Topic cache is in-memory per process** — cleared on server restart; follow-up context is lost between sessions
