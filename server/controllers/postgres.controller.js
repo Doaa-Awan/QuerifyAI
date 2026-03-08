@@ -5,13 +5,15 @@ import { postgresService } from '../services/postgres.service.js';
 import { schemaStore } from '../services/schemaStore.js';
 import z from 'zod';
 
-const connectSchema = z
-  .object({
-    host: z.string().trim().min(1, 'Host is required'),
-    user: z.string().trim().min(1, 'User is required'),
-    database: z.string().trim().min(1, 'Database is required'),
-  })
-  .passthrough();
+const connectSchema = z.object({
+  host: z.string().trim().min(1, 'Host is required'),
+  user: z.string().trim().min(1, 'User is required'),
+  database: z.string().trim().min(1, 'Database is required'),
+  port: z.union([z.string(), z.number()]).optional(),
+  password: z.string().optional(),
+  ssl: z.boolean().optional(),
+  options: z.string().optional(),
+});
 
 // Public interface
 export const postgresController = {

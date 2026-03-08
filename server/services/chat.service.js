@@ -43,9 +43,13 @@ async function loadTableMetadata() {
 // Returns true when the query contains follow-up language or is very short.
 function isFollowUpQuery(query) {
   const lower = query.toLowerCase().trim();
-  const followUpWords = ['those', 'they', 'it ', 'these', 'that ', 'same', ' also', 'additionally', 'furthermore', 'what about', ' and '];
+  const followUpWords = [
+    'those', 'they', 'it ', 'these', 'that ', 'same',
+    ' also', 'additionally', 'furthermore', 'what about', ' and ',
+    'as well', ' too', 'plus', 'include', 'add ',
+  ];
   if (followUpWords.some((w) => lower.includes(w))) return true;
-  if (lower.split(/\s+/).length < 5) return true;
+  if (lower.split(/\s+/).length <= 5) return true;
   return false;
 }
 
@@ -155,8 +159,14 @@ export const chatService = {
         relevantTables = cached.tables;
         console.log('[chat] cache hit → reusing tables:', relevantTables);
       } else {
-        relevantTables = await selectRelevantTables(prompt, tableMetadata);
-        console.log('[chat] pass 1 result:', relevantTables);
+        const newTables = await selectRelevantTables(prompt, tableMetadata);
+        console.log('[chat] pass 1 result:', newTables);
+        if (newTables && cached) {
+          relevantTables = [...new Set([...cached.tables, ...newTables])];
+          console.log('[chat] merged with cached tables:', relevantTables);
+        } else {
+          relevantTables = newTables;
+        }
       }
 
       if (relevantTables && relevantTables.length > 0) {

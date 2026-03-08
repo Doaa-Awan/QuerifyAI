@@ -306,7 +306,7 @@ ${tableList}`;
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.2,
-    max_tokens: 200,
+    max_tokens: 600,
   });
 
   const content = response.choices?.[0]?.message?.content ?? '{}';
@@ -466,6 +466,7 @@ export const postgresService = {
 
     const pool = postgresRepository.getPool();
     try {
+      await writeExplorerSnapshot(pool);
       const { tables } = await introspectionService.introspect(pool);
 
       const schemaRows = tables.flatMap((t) =>
