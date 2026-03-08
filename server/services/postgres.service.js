@@ -2,6 +2,7 @@
 
 import { Pool } from 'pg';
 import { getSchema as fetchSchema, getSampleRows, getTables } from '../db/postgres.js';
+import { introspectionService } from './introspection.js';
 import { postgresRepository } from '../repositories/postgres.repository.js';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -369,6 +370,8 @@ async function clearExplorerSnapshotFile() {
   }
 }
 
+export { sanitizeSamples };
+
 // Public interface
 export const postgresService = {
   async connectDemo() {
@@ -453,6 +456,35 @@ export const postgresService = {
       return { ok: true, body: { message: 'DB explorer context cleared', path: 'server/prompts/db-explorer-context.md' } };
     } catch (err) {
       return { ok: false, status: 500, body: { error: err.message } };
+    }
+  },
+  async connectAndIntrospect(config) {
+    const connectResult = await postgresService.connect(config);
+    if (!connectResult.ok) return connectResult;
+
+    const pool = postgresRepository.getPool();
+    try {
+      const { tables } = await introspectionService.introspect(pool);
+
+      const schemaRows = tables.flatMap((t) =>
+        t.columns.map((c) => ({ table_name: t.name, column_name: c.name }))
+      );
+
+      let descriptions = {};
+      try {
+        descriptions = await generateTableDescriptions(tables.map((t) => t.name), schemaRows);
+      } catch (err) {
+        console.warn('[connect] AI description generation failed:', err.message);
+      }
+
+      const tablesWithDescriptions = tables.map((t) => ({
+        ...t,
+        description: descriptions[t.name] ?? '',
+      }));
+
+      return { ok: true, tables: tablesWithDescriptions, descriptions };
+    } catch (err) {
+      return { ok: false, error: err.message, status: 500 };
     }
   },
 };

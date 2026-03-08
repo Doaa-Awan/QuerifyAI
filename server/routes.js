@@ -15,6 +15,7 @@ router.post('/api/chat', chatLimiter, chatController.sendMessage);
 
 router.post('/db/connect-demo', postgresController.connectDemo);
 router.post('/db/connect', postgresController.connect);
+router.post('/api/connect', postgresController.connectAndIntrospect);
 router.get('/db/status', postgresController.getStatus);
 router.get('/health/db', postgresController.getHealth);
 router.get('/db/schema', postgresController.getSchema);

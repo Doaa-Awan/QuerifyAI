@@ -81,4 +81,22 @@ export const postgresController = {
 
     res.status(result.status || 500).json(result.body);
   },
+  async connectAndIntrospect(req, res) {
+    const parseResult = connectSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({ error: parseResult.error.format() });
+      return;
+    }
+
+    const result = await postgresService.connectAndIntrospect(parseResult.data);
+    if (result.ok) {
+      req.session.connected = true;
+      res.json({ tables: result.tables, descriptions: result.descriptions });
+      return;
+    }
+
+    res.status(result.status || 500).json({
+      error: result.error || 'Failed to connect',
+    });
+  },
 };
