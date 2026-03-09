@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import ChatBot from './components/chat/ChatBot';
 import ERDModal from './components/ERDModal';
-import { HiOutlineSquares2X2, HiOutlineTableCells, HiChevronLeft, HiChevronRight, HiChevronDown } from 'react-icons/hi2';
+import { HiOutlineSquares2X2, HiOutlineTableCells, HiChevronDown } from 'react-icons/hi2';
 
 function columnTooltipKey(tableName, columnName) {
   return `${tableName}\0${columnName}`;
 }
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [hasMessages, setHasMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -128,28 +127,12 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
         <ERDModal tables={tables} onClose={() => setErdOpen(false)} />
       )}
 
-      <div className={`db-explorer-body ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="db-explorer-body">
         <section className="db-main">
           <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} />
         </section>
 
-        <aside
-          className={`db-sidebar ${isCollapsed ? 'collapsed' : ''}`}
-          aria-label="Schema tables"
-        >
-          <button
-            className="sidebar-toggle"
-            type="button"
-            onClick={() => setIsCollapsed((prev) => !prev)}
-            aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? 'Expand schema panel' : 'Collapse schema panel'}
-          >
-            {isCollapsed ? (
-              <HiChevronLeft aria-hidden />
-            ) : (
-              <HiChevronRight aria-hidden />
-            )}
-          </button>
+        <aside className="db-sidebar" aria-label="Schema tables">
           <div className="sidebar-inner">
             <div className="sidebar-header">
               <HiOutlineTableCells className="sidebar-icon" aria-hidden />
