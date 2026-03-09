@@ -6,7 +6,7 @@ import ChatInput from './ChatInput';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
+const ChatBot = ({ onTablesUsed, onFirstMessage, dialect }) => {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -41,6 +41,7 @@ const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
       const { data } = await axios.post(`${API_BASE}/api/chat`, {
         prompt,
         conversationId: conversationId.current,
+        dialect: dialect ?? 'sql',
       });
       const { sql, explanation, tables_used } = data;
       const content = sql
@@ -60,10 +61,11 @@ const ChatBot = ({ onTablesUsed, onFirstMessage }) => {
 
   return (
     <div className='chat-window'>
-      <div className='chat-header'>
-        {/* <span></span> */}
-        <span className='chat-hint'>AI answers in seconds</span>
-      </div>
+      {messages.length === 0 && (
+        <div className='chat-header'>
+          <span className='chat-hint'>AI answers in seconds</span>
+        </div>
+      )}
       {/* <div className='chat-messages'>
         <div className='chat-message muted'></div>
       </div> */}

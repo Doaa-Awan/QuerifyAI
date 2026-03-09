@@ -8,6 +8,7 @@ function columnTooltipKey(tableName, columnName) {
 }
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
+  const [dialect, setDialect] = useState('sql');
   const [hasMessages, setHasMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -113,6 +114,27 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
         </button>
       </nav>
 
+      <div className="dialect-control">
+        <span className="dialect-label">Output format</span>
+        <div className="dialect-picker" role="group" aria-label="Query output format">
+          <button
+            className={`dialect-option${dialect === 'sql' ? ' active' : ''}`}
+            type="button"
+            onClick={() => setDialect('sql')}
+          >
+            SQL
+          </button>
+          <button
+            className="dialect-option"
+            type="button"
+            disabled
+            title="PostgreSQL support coming soon"
+          >
+            PostgreSQL <span className="dialect-soon">Soon</span>
+          </button>
+        </div>
+      </div>
+
       {!hasMessages && (
         <header className="db-explorer-header">
           <div className="db-explorer-branding">
@@ -129,7 +151,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
 
       <div className="db-explorer-body">
         <section className="db-main">
-          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} />
+          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} />
         </section>
 
         <aside className="db-sidebar" aria-label="Schema tables">

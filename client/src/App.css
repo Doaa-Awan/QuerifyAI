@@ -2,6 +2,10 @@
   min-height: 100vh;
 }
 
+p {
+  margin: 0;
+}
+
 .login-shell {
   min-height: 100vh;
   display: flex;
@@ -331,6 +335,81 @@
   order: -1;
 }
 
+/* ——— Dialect toggle (fixed top-right) ——— */
+.dialect-control {
+  position: fixed;
+  top: 1rem;
+  right: calc(280px + 1rem);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  z-index: 20;
+}
+
+.dialect-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+
+.dialect-picker {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.dialect-option {
+  padding: 0 0.85rem;
+  height: 36px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dialect-option:last-child {
+  border-right: none;
+}
+
+.dialect-option.active {
+  background: var(--surface-strong);
+  color: var(--ink);
+}
+
+.dialect-option:hover:not(.active):not(:disabled) {
+  background: var(--surface-alt);
+  color: var(--ink);
+}
+
+.dialect-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.dialect-soon {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
 .db-explorer-body {
   position: relative;
   padding-right: 280px;
@@ -376,7 +455,7 @@
   gap: 10px;
   overflow-y: auto;
   max-height: 60vh;
-  padding: 0 10% 15px;
+  padding: 5% 10% 15px;
   max-width: 1120px;
 }
 
@@ -441,7 +520,7 @@
 }
 
 .chat-message {
-  padding: 0 20px;
+  padding: 7px 20px;
   border-radius: 25px;
   background: var(--surface-alt);
   border: 1px solid var(--line);
@@ -1113,6 +1192,10 @@
   .db-sidebar {
     width: 260px;
   }
+
+  .dialect-control {
+    right: calc(260px + 1rem);
+  }
 }
 
 @media (max-width: 800px) {
@@ -1158,6 +1241,10 @@
 
   .db-main {
     padding-bottom: 60px;
+  }
+
+  .dialect-control {
+    right: 1rem;
   }
 }
 
