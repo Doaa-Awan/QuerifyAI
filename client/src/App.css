@@ -480,6 +480,17 @@
   word-break: normal;
 }
 
+/* SyntaxHighlighter's PreTag="div" sits inside our <pre> — reset margins */
+.bot-message pre > div {
+  margin: 0;
+  padding: 0;
+}
+
+/* Prism token spans — no extra background bleed */
+.bot-message pre .token {
+  background: none;
+}
+
 .code-block-wrapper {
   position: relative;
 }
