@@ -464,10 +464,19 @@
   overflow: hidden;
 }
 
+.bot-message p,
+.bot-message ul,
+.bot-message li {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .bot-message pre {
   overflow-x: auto;
   max-width: 100%;
   white-space: pre;
+  font-size: 0.95rem;
 }
 
 .bot-message code {
