@@ -380,7 +380,8 @@
   gap: 10px;
   overflow-y: auto;
   max-height: 60vh;
-  padding: 0 360px;
+  padding: 0 10% 15px;
+  max-width: 1120px;
 }
 
 /* Full-height chat layout — only active after first message */
@@ -389,7 +390,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-bottom: clamp(1rem, 2vw, 1.5rem);
+  /* padding-bottom: clamp(1rem, 2vw, 1.5rem); */
 }
 
 .has-messages .chat-body {
@@ -484,7 +485,7 @@
   padding: 10px;
   gap: 5px;
   align-self: flex-start;
-  margin-left: 360px;
+  margin-left: 10%;
 }
 
 .bot-typing-dot {
@@ -518,11 +519,12 @@
   justify-content: end;
   align-items: end;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 25px;
   background: var(--surface-strong);
-  padding: 10px;
+  padding: 20px;
   flex-shrink: 0;
-  margin: 25px 360px 0;
+  max-width: 860px;
+  margin: 0 9.5% 0;
 }
 
 .chat-input textarea {
