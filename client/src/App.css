@@ -367,6 +367,7 @@
   letter-spacing: 0.14em;
   color: var(--accent);
   margin-bottom: 1rem;
+  margin-right: 11%;
 }
 
 .chat-messages {

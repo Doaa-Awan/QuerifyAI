@@ -117,8 +117,8 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
         <header className="db-explorer-header">
           <div className="db-explorer-branding">
             <p className="eyebrow">AI DB Explorer</p>
-            <h2>Ask the database</h2>
-            <p className="subtitle">Use plain language to explore tables, rows, and relationships.</p>
+            <h2>QuerifyAI</h2>
+            <p className="subtitle">Built for developers and analysts navigating databases they did not build.</p>
           </div>
         </header>
       )}
