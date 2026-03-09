@@ -202,8 +202,8 @@ Fallback: if Pass 1 returns null/empty, injects full db-explorer-context.md inst
 - Falls back to full schema injection if Pass 1 fails
 
 **Follow-up detection (`isFollowUpQuery`):**
-- Word list: `those`, `they`, `it`, `these`, `that`, `same`, `also`, `additionally`, `furthermore`, `what about`, `and`, `as well`, `too`, `plus`, `include`, `add`
-- Also triggers for queries of 5 words or fewer
+- Word list: `those`, `they`, `it`, `these`, `that`, `same`, `also`, `additionally`, `furthermore`, `what about`
+- Also triggers for queries of 3 words or fewer
 - On cache hit → reuse cached tables (no Pass 1 call)
 - On cache miss with existing cache → run Pass 1, then **merge** new tables with cached set (union)
 

@@ -45,11 +45,10 @@ function isFollowUpQuery(query) {
   const lower = query.toLowerCase().trim();
   const followUpWords = [
     'those', 'they', 'it ', 'these', 'that ', 'same',
-    ' also', 'additionally', 'furthermore', 'what about', ' and ',
-    'as well', ' too', 'plus', 'include', 'add ',
+    ' also', 'additionally', 'furthermore', 'what about',
   ];
   if (followUpWords.some((w) => lower.includes(w))) return true;
-  if (lower.split(/\s+/).length <= 5) return true;
+  if (lower.split(/\s+/).length <= 3) return true;
   return false;
 }
 
