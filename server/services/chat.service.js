@@ -23,6 +23,7 @@ const tableMetadataPath = path.resolve(__dirname, '../prompts/table-metadata.jso
 
 // Per-conversation cache: conversationId -> { query: string, tables: string[] }
 const topicCache = new Map();
+const MAX_TOPIC_CACHE = 100;
 
 async function buildInstructions(schemaOverride) {
   const template = await fs.readFile(path.resolve(__dirname, '../prompts/chatbot.txt'), 'utf8');
@@ -171,7 +172,10 @@ export const chatService = {
       if (relevantTables && relevantTables.length > 0) {
         schemaContext = buildPartialSchemaContext(relevantTables, tableMetadata);
         if (!isCacheHit) {
-          topicCache.set(conversationId, { query: prompt, tables: relevantTables });
+          if (topicCache.size >= MAX_TOPIC_CACHE) {
+          topicCache.delete(topicCache.keys().next().value);
+        }
+        topicCache.set(conversationId, { query: prompt, tables: relevantTables });
         }
       } else {
         console.log('[chat] fallback → using full schema');
