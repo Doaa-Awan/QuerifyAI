@@ -166,6 +166,7 @@ function App() {
           localStorage.removeItem('querify_messages');
           localStorage.removeItem('querify_conversation_id');
           localStorage.removeItem('querify_schema');
+          clearExplorerContext();
           setShowExplorer(false);
         }}
         onExit={() => {
