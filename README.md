@@ -6,11 +6,12 @@ Querify connects to any PostgreSQL database, introspects the schema automaticall
 
 > **[Live Demo](#)** · **[GitHub](https://github.com/Doaa-Awan/ai-db-explorer)**
 
+
 ---
 
 ## Screenshots
 
-*[Add demo GIF here — natural language input → SQL output]*
+<img width="2845" height="1511" alt="image" src="https://github.com/user-attachments/assets/8764d6ba-f7b0-41d7-a2b8-24dbceac041a" />
 
 ---
 
