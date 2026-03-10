@@ -38,18 +38,17 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect }) => {
       setIsBotTyping(true);
       setError('');
       //api call to backend with prompt and conversationId
-      const { data } = await axios.post(`${API_BASE}/api/chat`, {
-        prompt,
+      const { data } = await axios.post(`${API_BASE}/api/query`, {
+        question: prompt,
         conversationId: conversationId.current,
-        dialect: dialect ?? 'sql',
       });
-      const { sql, explanation, tables_used } = data;
+      const { sql, explanation, tablesUsed } = data;
       const content = sql
         ? `${explanation}\n\n\`\`\`sql\n${sql}\n\`\`\``
         : explanation;
       setMessages((prev) => [...prev, { role: 'bot', content }]);
-      if (typeof onTablesUsed === 'function' && tables_used?.length) {
-        onTablesUsed(tables_used);
+      if (typeof onTablesUsed === 'function' && tablesUsed?.length) {
+        onTablesUsed(tablesUsed);
       }
     } catch (err) {
       console.error('Error submitting prompt:', err);
