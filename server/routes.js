@@ -2,6 +2,7 @@
 
 import express from 'express';
 import { chatController } from './controllers/chat.controller.js';
+import { queryController } from './controllers/query.controller.js';
 import { postgresController } from './controllers/postgres.controller.js';
 import { chatLimiter, snapshotLimiter } from './middleware/rateLimiter.js';
 
@@ -12,6 +13,7 @@ router.get('/api', (req, res) => {
 });
 
 router.post('/api/chat', chatLimiter, chatController.sendMessage);
+router.post('/api/query', chatLimiter, queryController.handleQuery);
 
 router.post('/db/connect-demo', postgresController.connectDemo);
 router.post('/db/connect', postgresController.connect);

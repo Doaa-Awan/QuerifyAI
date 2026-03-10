@@ -5,6 +5,7 @@ import { getSchema as fetchSchema, getSampleRows, getTables } from '../db/postgr
 import { introspectionService } from './introspection.js';
 import { schemaStore } from './schemaStore.js';
 import { postgresRepository } from '../repositories/postgres.repository.js';
+import { queryCache } from './cache.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -393,6 +394,7 @@ export const postgresService = {
 
     const result = await testAndSetDb(demoCfg);
     if (result.ok) {
+      queryCache.clear();
       return { ok: true };
     }
 
@@ -405,6 +407,7 @@ export const postgresService = {
 
     const result = await testAndSetDb(config);
     if (result.ok) {
+      queryCache.clear();
       return { ok: true };
     }
 
