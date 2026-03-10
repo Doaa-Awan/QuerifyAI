@@ -13,6 +13,7 @@ const chatSchema = z.object({
 // Public interface
 export const chatController = {
   async sendMessage(req, res) {
+    console.warn('[/api/chat] Deprecated — use /api/query instead');
     //validate input
     const parseResult = chatSchema.safeParse(req.body);
     if (!parseResult.success) {
