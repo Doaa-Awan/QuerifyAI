@@ -1,0 +1,116 @@
+# Requirements: Querify — AI Database Explorer
+
+**Defined:** 2026-03-09
+**Core Value:** The two-pass AI pipeline that turns a plain English question into accurate SQL using only the relevant slice of the schema — without ever exposing real user data to the LLM.
+
+## v1 Requirements
+
+Requirements for this milestone. Each maps to one of 3 roadmap phases.
+
+### Query API
+
+- [x] **QAPI-01**: System exposes `POST /api/query` with request shape `{ question, conversationId }` and response shape `{ sql, explanation, tablesUsed }`
+- [x] **QAPI-02**: `POST /api/query` applies the existing `chatLimiter` rate limit
+- [x] **QAPI-03**: `cache.js` caches query results keyed by `hash(normalizedQuestion + schemaFingerprint)`, capped at 200 entries, invalidated on new DB connect
+- [x] **QAPI-04**: `ChatBot.jsx` sends queries to `/api/query` instead of `/api/chat`; old `/api/chat` handler logs a deprecation warning
+
+### Memory Safety
+
+- [x] **MEM-01**: `topicCache` Map is capped (LRU or max-size eviction, ≤100 entries)
+- [x] **MEM-02**: `conversations` Map in `conversation.repository.js` is capped (≤200 entries or per-conversation message depth ≤20)
+- [x] **MEM-03**: All three unbounded Maps are capped before Railway deployment
+
+### ERD Visualization
+
+- [ ] **ERD-01**: `@xyflow/react` (v12) installed and rendering inside `ERDModal.jsx` replacing the custom SVG layer
+- [ ] **ERD-02**: Each table rendered as a node card showing: table name, AI description, column list with PK/FK flags and data types, row count badge
+- [ ] **ERD-03**: FK relationships rendered as edges between nodes using `smoothstep` edge type
+- [ ] **ERD-04**: Auto-layout computed via `@dagrejs/dagre` so nodes don't overlap on initial render
+- [ ] **ERD-05**: React Flow `<Controls />` (zoom in/out/fit) and `<MiniMap />` present
+- [ ] **ERD-06**: `nodeTypes` defined as a module-level constant (not inline) to prevent remount on every render
+
+### Deployment
+
+- [ ] **DEPL-01**: `express-session` cookie uses `sameSite: 'none'` and `secure: true` in production (env-gated)
+- [ ] **DEPL-02**: Frontend API calls use `import.meta.env.VITE_API_URL ?? ''` as base URL; dev proxy still works with empty string
+- [ ] **DEPL-03**: `GET /health` endpoint returns `200 OK` for Railway health check probe
+- [ ] **DEPL-04**: `vercel.json` includes SPA routing rewrite (`"/*" → "/index.html"`)
+- [ ] **DEPL-05**: `railway.toml` or Railway dashboard configured with `rootDirectory: server`, correct build/start commands
+- [ ] **DEPL-06**: Supabase demo DB connection env vars (already provisioned — set `DEMO_DB_HOST`, `DEMO_DB_USER`, `DEMO_DB_PASSWORD`, `DEMO_DB_NAME`) in Railway
+
+### Demo UX
+
+- [ ] **UX-01**: Cold start handler polls `GET /health` with exponential backoff (3s base, up to ~90s); shows "Waking up the server..." message after 3s delay; resolves silently on success
+- [ ] **UX-02**: Rate limit banner reads `X-RateLimit-Remaining` header and shows three states: info (≥10 remaining), warning (1–9 remaining), blocked (0 remaining); dismissible in info state; persistent in warning/blocked
+- [ ] **UX-03**: Rate limit banner appears inside the chat interface, not on the login/connect screen
+
+## v2 Requirements
+
+Deferred to future milestone. Tracked but not in current roadmap.
+
+### Security Hardening
+
+- **SEC-01**: `requireSession` middleware applied to `/api/chat`, `/api/query`, `/db/schema`, `/db/explorer-context/*` — all endpoints currently public
+- **SEC-02**: `connectLimiter` applied to `/db/connect` and `/db/connect-demo` (referenced in CONCERNS.md but never wired)
+- **SEC-03**: Production startup check throws if `SESSION_SECRET` equals the default weak value
+
+### Frontend Rebrand
+
+- **UI-01**: `ConnectionForm.jsx` — dedicated DB connection string input component
+- **UI-02**: `SchemaExplorer.jsx` — table list sidebar with AI descriptions
+- **UI-03**: `QueryInterface.jsx` — natural language input + SQL output panel
+- **UI-04**: `SQLDisplay.jsx` — formatted SQL with copy button (spec target component)
+
+### Multi-DB Support
+
+- **DB-01**: MySQL support (schema introspection + query generation)
+- **DB-02**: SQL Server support
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Auth / user accounts | Demo tool; single-user; not a SaaS product this milestone |
+| Query execution / live results | Querify generates SQL — user runs it themselves |
+| React Flow ERD table highlight from `tables_used` | Stretch goal only; dependency on QAPI-01 being done first |
+| `/api/chat` removal | Keep as legacy; deprecation log is sufficient |
+| Composite PK support | Edge case; first PK column used as before |
+| D3-based ERD | React Flow is the chosen path; D3 fights React's VDOM |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| QAPI-01 | Phase 1 | Complete |
+| QAPI-02 | Phase 1 | Complete |
+| QAPI-03 | Phase 1 | Complete |
+| QAPI-04 | Phase 1 | Complete |
+| MEM-01 | Phase 1 | Complete |
+| MEM-02 | Phase 1 | Complete |
+| MEM-03 | Phase 1 | Complete |
+| ERD-01 | Phase 2 | Pending |
+| ERD-02 | Phase 2 | Pending |
+| ERD-03 | Phase 2 | Pending |
+| ERD-04 | Phase 2 | Pending |
+| ERD-05 | Phase 2 | Pending |
+| ERD-06 | Phase 2 | Pending |
+| DEPL-01 | Phase 3 | Pending |
+| DEPL-02 | Phase 3 | Pending |
+| DEPL-03 | Phase 3 | Pending |
+| DEPL-04 | Phase 3 | Pending |
+| DEPL-05 | Phase 3 | Pending |
+| DEPL-06 | Phase 3 | Pending |
+| UX-01 | Phase 3 | Pending |
+| UX-02 | Phase 3 | Pending |
+| UX-03 | Phase 3 | Pending |
+
+**Coverage:**
+- v1 requirements: 22 total
+- Mapped to phases: 22
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-03-09*
+*Last updated: 2026-03-09 after initial definition*
