@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import session from 'express-session';
 import router from './routes.js';
+import { clearExplorerSnapshotFile } from './services/postgres.service.js';
 
 //.env config
 dotenv.config();
@@ -41,6 +42,13 @@ app.use(
 app.use(router);
 
 const PORT = process.env.PORT || process.env.VITE_PORT || 5000;
+
+(async () => {
+  try {
+    await clearExplorerSnapshotFile();
+    console.log('[startup] DB explorer context cleared');
+  } catch { /* prompts dir may not exist yet */ }
+})();
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

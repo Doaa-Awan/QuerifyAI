@@ -373,7 +373,7 @@ async function clearExplorerSnapshotFile() {
   }
 }
 
-export { sanitizeSamples };
+export { sanitizeSamples, clearExplorerSnapshotFile };
 
 // Public interface
 export const postgresService = {
