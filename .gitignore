@@ -21,3 +21,4 @@ pnpm-debug.log*
 .idea/
 server/prompts/db-explorer-context.md
 server/prompts/table-metadata.json
+.planning/
