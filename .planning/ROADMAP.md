@@ -12,7 +12,7 @@ Querify's backend core and prototype UI are working. This milestone transforms i
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Query API and Memory Safety** - Expose a clean `POST /api/query` endpoint with result caching and cap all unbounded in-memory Maps (completed 2026-03-10)
+- [x] **Phase 1: Query API and Memory Safety** - Expose a clean `POST /api/query` endpoint with result caching and cap all unbounded in-memory Maps (completed 2026-03-10)
 - [ ] **Phase 2: ERD Polish** - Replace the custom SVG ERD with an interactive React Flow canvas with node cards, FK edges, and zoom controls
 - [ ] **Phase 3: Deployment and Demo UX** - Deploy to Vercel + Railway with Neon demo DB, cold start banner, and rate limit indicator
 
@@ -74,3 +74,14 @@ Phases execute in numeric order: 1 → 2 → 3
 | 1. Query API and Memory Safety | 2/2 | Complete   | 2026-03-10 |
 | 2. ERD Polish | 0/2 | Not started | - |
 | 3. Deployment and Demo UX | 0/3 | Not started | - |
+
+### Phase 4: Ensure table schema files populated and cleared
+
+**Goal:** Snapshot file lifecycle is explicit, safe, and tested — runtime-only files never appear in git, server startup never fails due to cleanup errors, and a DB or disk failure during snapshot generation is swallowed non-fatally
+**Requirements**: TBD
+**Depends on:** Phase 3
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Remove snapshot files from git index, fix startup catch to emit console.warn, wrap writeExplorerSnapshot in outer non-fatal try/catch
+- [ ] 04-02-PLAN.md — Write unit tests for clearExplorerSnapshotFile and writeExplorerSnapshot using node:test with mocked fs
