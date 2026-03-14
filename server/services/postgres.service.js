@@ -331,35 +331,39 @@ async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptio
 }
 
 async function writeExplorerSnapshot(pool) {
-  const schemaRows = await fetchSchema(pool);
-  const tables = await getTables(pool);
-  console.log('[snapshot] tables found:', tables);
-  const rawTableSamples = {};
-
-  for (const tableName of tables) {
-    rawTableSamples[tableName] = await getSampleRows(pool, tableName);
-  }
-
-  const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
-
-  const markdown = buildSnapshotMarkdown({
-    generatedAt: new Date(),
-    tables,
-    schemaRows,
-    tableSamples,
-  });
-
-  await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
-  await fs.writeFile(explorerPromptPath, markdown, 'utf8');
-  console.log('[snapshot] db-explorer-context.md written');
-
-  let descriptions = {};
   try {
-    descriptions = await generateTableDescriptions(tables, schemaRows);
+    const schemaRows = await fetchSchema(pool);
+    const tables = await getTables(pool);
+    console.log('[snapshot] tables found:', tables);
+    const rawTableSamples = {};
+
+    for (const tableName of tables) {
+      rawTableSamples[tableName] = await getSampleRows(pool, tableName);
+    }
+
+    const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
+
+    const markdown = buildSnapshotMarkdown({
+      generatedAt: new Date(),
+      tables,
+      schemaRows,
+      tableSamples,
+    });
+
+    await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
+    await fs.writeFile(explorerPromptPath, markdown, 'utf8');
+    console.log('[snapshot] db-explorer-context.md written');
+
+    let descriptions = {};
+    try {
+      descriptions = await generateTableDescriptions(tables, schemaRows);
+    } catch (err) {
+      console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
+    }
+    await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
   } catch (err) {
-    console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
+    console.warn('[snapshot] failed to write explorer snapshot:', err.message);
   }
-  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
 }
 
 async function clearExplorerSnapshotFile() {

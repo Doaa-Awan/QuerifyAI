@@ -47,7 +47,9 @@ const PORT = process.env.PORT || process.env.VITE_PORT || 5000;
   try {
     await clearExplorerSnapshotFile();
     console.log('[startup] DB explorer context cleared');
-  } catch { /* prompts dir may not exist yet */ }
+  } catch (err) {
+    console.warn('[startup] failed to clear snapshot files:', err.message);
+  }
 })();
 
 app.listen(PORT, () => {
