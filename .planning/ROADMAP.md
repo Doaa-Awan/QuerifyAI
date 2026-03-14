@@ -80,7 +80,7 @@ Phases execute in numeric order: 1 → 2 → 3
 **Goal:** Snapshot file lifecycle is explicit, safe, and tested — runtime-only files never appear in git, server startup never fails due to cleanup errors, and a DB or disk failure during snapshot generation is swallowed non-fatally
 **Requirements**: TBD
 **Depends on:** Phase 3
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md — Remove snapshot files from git index, fix startup catch to emit console.warn, wrap writeExplorerSnapshot in outer non-fatal try/catch
