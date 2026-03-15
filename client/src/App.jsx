@@ -95,6 +95,7 @@ function App() {
       await axios.post(`${API_BASE}/db/explorer-context/snapshot`);
     } catch (err) {
       console.error('Failed to generate DB explorer context', err);
+      throw err;
     }
   };
 
@@ -114,7 +115,13 @@ function App() {
       const available = await checkDbStatus();
       if (available) {
         await fetchSchema();
-        await generateExplorerContext();
+        try {
+          await generateExplorerContext();
+        } catch (err) {
+          setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
+          await checkDbStatus();
+          return;
+        }
         localStorage.setItem('querify_connected', 'true');
         setShowExplorer(true);
       }
@@ -133,7 +140,13 @@ function App() {
       const available = await checkDbStatus();
       if (available) {
         await fetchSchema();
-        await generateExplorerContext();
+        try {
+          await generateExplorerContext();
+        } catch (err) {
+          setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
+          await checkDbStatus();
+          return;
+        }
         localStorage.setItem('querify_connected', 'true');
         setShowExplorer(true);
       }
@@ -150,7 +163,11 @@ function App() {
       const available = await checkDbStatus();
       if (available) {
         await fetchSchema();
-        await generateExplorerContext();
+        try {
+          await generateExplorerContext();
+        } catch {
+          // snapshot refresh failed on page load; proceed anyway
+        }
         localStorage.setItem('querify_connected', 'true');
         setShowExplorer(true);
       }

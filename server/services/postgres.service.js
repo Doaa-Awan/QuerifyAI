@@ -398,12 +398,6 @@ export const postgresService = {
     if (!result.ok) return { ok: false, error: result.error, status: 500 };
 
     queryCache.clear();
-    const pool = postgresRepository.getPool();
-    try {
-      await writeExplorerSnapshot(pool);
-    } catch (err) {
-      return { ok: false, error: `DB connected but snapshot generation failed: ${err.message}`, status: 500 };
-    }
     return { ok: true };
   },
   async connect(config) {
@@ -417,12 +411,6 @@ export const postgresService = {
     if (!result.ok) return { ok: false, error: result.error, status: 500 };
 
     queryCache.clear();
-    const pool = postgresRepository.getPool();
-    try {
-      await writeExplorerSnapshot(pool);
-    } catch (err) {
-      return { ok: false, error: `DB connected but snapshot generation failed: ${err.message}`, status: 500 };
-    }
     return { ok: true };
   },
   getStatus() {
