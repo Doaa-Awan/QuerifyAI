@@ -303,12 +303,15 @@ async function generateTableDescriptions(tables, schemaRows) {
 Tables:
 ${tableList}`;
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.2,
-    max_tokens: 600,
-  });
+  const response = await openai.chat.completions.create(
+    {
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.2,
+      max_tokens: 600,
+    },
+    { timeout: 30_000 },
+  );
 
   const content = response.choices?.[0]?.message?.content ?? '{}';
   const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();

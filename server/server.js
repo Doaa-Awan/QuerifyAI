@@ -43,14 +43,14 @@ app.use(router);
 
 const PORT = process.env.PORT || process.env.VITE_PORT || 5000;
 
-(async () => {
-  try {
-    await clearExplorerSnapshotFile();
-    console.log('[startup] DB explorer context cleared');
-  } catch (err) {
-    console.warn('[startup] failed to clear snapshot files:', err.message);
-  }
-})();
+// (async () => {
+//   try {
+//     await clearExplorerSnapshotFile();
+//     console.log('[startup] DB explorer context cleared');
+//   } catch (err) {
+//     console.warn('[startup] failed to clear snapshot files:', err.message);
+//   }
+// })();
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
