@@ -331,39 +331,35 @@ async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptio
 }
 
 async function writeExplorerSnapshot(pool) {
-  try {
-    const schemaRows = await fetchSchema(pool);
-    const tables = await getTables(pool);
-    console.log('[snapshot] tables found:', tables);
-    const rawTableSamples = {};
+  const schemaRows = await fetchSchema(pool);
+  const tables = await getTables(pool);
+  console.log('[snapshot] tables found:', tables);
+  const rawTableSamples = {};
 
-    for (const tableName of tables) {
-      rawTableSamples[tableName] = await getSampleRows(pool, tableName);
-    }
-
-    const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
-
-    const markdown = buildSnapshotMarkdown({
-      generatedAt: new Date(),
-      tables,
-      schemaRows,
-      tableSamples,
-    });
-
-    await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
-    await fs.writeFile(explorerPromptPath, markdown, 'utf8');
-    console.log('[snapshot] db-explorer-context.md written');
-
-    let descriptions = {};
-    try {
-      descriptions = await generateTableDescriptions(tables, schemaRows);
-    } catch (err) {
-      console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
-    }
-    await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
-  } catch (err) {
-    console.warn('[snapshot] failed to write explorer snapshot:', err.message);
+  for (const tableName of tables) {
+    rawTableSamples[tableName] = await getSampleRows(pool, tableName);
   }
+
+  const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
+
+  const markdown = buildSnapshotMarkdown({
+    generatedAt: new Date(),
+    tables,
+    schemaRows,
+    tableSamples,
+  });
+
+  await fs.mkdir(path.dirname(explorerPromptPath), { recursive: true });
+  await fs.writeFile(explorerPromptPath, markdown, 'utf8');
+  console.log('[snapshot] db-explorer-context.md written');
+
+  let descriptions = {};
+  try {
+    descriptions = await generateTableDescriptions(tables, schemaRows);
+  } catch (err) {
+    console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
+  }
+  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
 }
 
 async function clearExplorerSnapshotFile() {
@@ -396,26 +392,38 @@ export const postgresService = {
       return { ok: false, error: 'Demo DB credentials are not configured on the server', status: 400 };
     }
 
-    const result = await testAndSetDb(demoCfg);
-    if (result.ok) {
-      queryCache.clear();
-      return { ok: true };
-    }
+    try { await clearExplorerSnapshotFile(); } catch { /* non-fatal */ }
 
-    return { ok: false, error: result.error, status: 500 };
+    const result = await testAndSetDb(demoCfg);
+    if (!result.ok) return { ok: false, error: result.error, status: 500 };
+
+    queryCache.clear();
+    const pool = postgresRepository.getPool();
+    try {
+      await writeExplorerSnapshot(pool);
+    } catch (err) {
+      return { ok: false, error: `DB connected but snapshot generation failed: ${err.message}`, status: 500 };
+    }
+    return { ok: true };
   },
   async connect(config) {
     if (isMissingRequiredConfig(config)) {
       return { ok: false, error: 'Host, user and database are required', status: 400 };
     }
 
-    const result = await testAndSetDb(config);
-    if (result.ok) {
-      queryCache.clear();
-      return { ok: true };
-    }
+    try { await clearExplorerSnapshotFile(); } catch { /* non-fatal */ }
 
-    return { ok: false, error: result.error, status: 500 };
+    const result = await testAndSetDb(config);
+    if (!result.ok) return { ok: false, error: result.error, status: 500 };
+
+    queryCache.clear();
+    const pool = postgresRepository.getPool();
+    try {
+      await writeExplorerSnapshot(pool);
+    } catch (err) {
+      return { ok: false, error: `DB connected but snapshot generation failed: ${err.message}`, status: 500 };
+    }
+    return { ok: true };
   },
   getStatus() {
     return { available: postgresRepository.isAvailable() };
@@ -473,7 +481,11 @@ export const postgresService = {
 
     const pool = postgresRepository.getPool();
     try {
-      await writeExplorerSnapshot(pool);
+      try {
+        await writeExplorerSnapshot(pool);
+      } catch (err) {
+        console.warn('[connect] snapshot generation non-fatal:', err.message);
+      }
       const { tables } = await introspectionService.introspect(pool);
 
       const schemaRows = tables.flatMap((t) =>

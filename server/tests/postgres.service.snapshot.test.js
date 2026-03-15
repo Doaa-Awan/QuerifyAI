@@ -57,28 +57,14 @@ describe('writeExplorerSnapshot()', () => {
     mock.restoreAll();
   });
 
-  it('does not throw when pool.query rejects (outer try/catch swallows error)', async () => {
-    // Provide a pool mock that immediately rejects — simulates DB connection failure
+  it('throws when pool.query rejects (error propagates to caller)', async () => {
     const badPool = {
       query: async () => { throw new Error('connection refused'); },
     };
-    // Stub fs so no real files are touched even if flow reaches writeFile
     mock.method(fs, 'mkdir',     async () => undefined);
     mock.method(fs, 'writeFile', async () => undefined);
     mock.method(fs, 'unlink',    async () => undefined);
 
-    await assert.doesNotReject(() => writeExplorerSnapshot(badPool));
-  });
-
-  it('returns undefined after a pool failure (not an error object)', async () => {
-    const badPool = {
-      query: async () => { throw new Error('timeout'); },
-    };
-    mock.method(fs, 'mkdir',     async () => undefined);
-    mock.method(fs, 'writeFile', async () => undefined);
-    mock.method(fs, 'unlink',    async () => undefined);
-
-    const result = await writeExplorerSnapshot(badPool);
-    assert.equal(result, undefined);
+    await assert.rejects(() => writeExplorerSnapshot(badPool), /connection refused/);
   });
 });
