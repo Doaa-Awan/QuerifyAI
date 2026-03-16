@@ -2,7 +2,8 @@ import { useState } from 'react';
 import ChatBot from './components/chat/ChatBot';
 import ERDModal from './components/ERDModal';
 import SchemaSidebar from './components/SchemaSidebar';
-import { HiOutlineSquares2X2 } from 'react-icons/hi2';
+import SchemaVisualizer from './components/SchemaVisualizer';
+import { HiOutlineSquares2X2, HiOutlineCircleStack } from 'react-icons/hi2';
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [dialect, setDialect] = useState('sql');
@@ -16,6 +17,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
   });
   const [highlightedTables, setHighlightedTables] = useState(new Set());
   const [erdOpen, setErdOpen] = useState(false);
+  const [showVisualizer, setShowVisualizer] = useState(false);
 
   const handleBack = () => {
     if (typeof onExit === 'function') {
@@ -27,6 +29,10 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
   };
 
   const handleTablesUsed = (tables) => setHighlightedTables(new Set(tables));
+
+  if (showVisualizer) {
+    return <SchemaVisualizer tables={tables} onBack={() => setShowVisualizer(false)} />;
+  }
 
   return (
     <div className={`db-explorer-shell${hasMessages ? ' has-messages' : ''}`}>
@@ -46,6 +52,15 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
         >
           <HiOutlineSquares2X2 aria-hidden />
           <span>View ERD</span>
+        </button>
+        <button
+          className="btn ghost btn-nav"
+          type="button"
+          onClick={() => setShowVisualizer(true)}
+          title="View schema visualizer"
+        >
+          <HiOutlineCircleStack aria-hidden />
+          <span>View Schema</span>
         </button>
       </nav>
 
