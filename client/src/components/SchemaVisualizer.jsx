@@ -344,7 +344,7 @@ function SchemaVisualizerInner({ tables, onBack }) {
   const edges = useMemo(() => buildEdges(tables), [tables]);
 
   return (
-    <div style={{ height: '100vh', width: '100vw', background: 'var(--bg)' }}>
+    <div style={{ height: '100vh', width: '100vw', background: 'radial-gradient(circle at 80% 10%, rgba(208, 106, 69, 0.35), transparent 45%), radial-gradient(circle at 10% 90%, rgba(110, 88, 70, 0.25), transparent 50%), linear-gradient(140deg, var(--bg), var(--bg-strong))' }}>
       <button
         className='btn ghost btn-nav btn-back'
         type='button'
