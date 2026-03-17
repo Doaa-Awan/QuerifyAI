@@ -419,9 +419,10 @@ function SchemaVisualizerInner({ tables, onBack }) {
       {colInfo && (
         <div style={{
           position: 'absolute', bottom: 20, right: 20, zIndex: 10,
-          background: 'var(--surface)', border: '1px solid var(--line)',
+          background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.18)',
+          borderLeft: '3px solid var(--accent)',
           borderRadius: 8, padding: '12px 14px', minWidth: 220, maxWidth: 300,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontSize: 12,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.7)', fontSize: 12,
           color: 'var(--ink)', fontFamily: 'inherit',
         }}>
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8,
