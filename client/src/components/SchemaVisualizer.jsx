@@ -171,8 +171,7 @@ const nodeStyles = {
 function buildNodes(tables, onColHover, onColLeave) {
   if (!tables?.length) return [];
 
-  const COL_WIDTH = 320;
-  const ROW_GAP  = 40;
+  const COL_WIDTH = 300;
   const PADDING  = 60;
 
   const tableNames = new Set(tables.map(t => t.name));
@@ -221,53 +220,43 @@ function buildNodes(tables, onColHover, onColLeave) {
   const degree = (name) =>
     (outgoing.get(name)?.size ?? 0) + (incoming.get(name)?.size ?? 0);
 
-  // Group tables by level; within each level sort by degree descending (most connected first)
-  const byLevel = new Map();
-  tables.forEach(t => {
-    const l = levels.get(t.name) ?? 0;
-    if (!byLevel.has(l)) byLevel.set(l, []);
-    byLevel.get(l).push(t.name);
-  });
-  byLevel.forEach(names => {
-    names.sort((a, b) => degree(b) - degree(a));
-  });
-
   const estHeight = (name) => {
     const t = tableMap[name];
     if (!t) return 200;
     return HEADER_H + (t.columns?.length ?? 0) * ROW_H;
   };
 
-  // Vertical layout: level 0 = top row (parents), deeper levels below (children)
-  // Within each row: most-connected table leftmost, spread horizontally
-  const sortedLevels = [...byLevel.keys()].sort((a, b) => a - b);
-
-  // Row height per level = tallest node in that level
-  const levelH = new Map(
-    sortedLevels.map(l => [l, Math.max(...byLevel.get(l).map(estHeight))])
-  );
-
-  // Cumulative y offsets per level
-  const levelY = new Map();
-  let cumY = PADDING;
-  sortedLevels.forEach(l => {
-    levelY.set(l, cumY);
-    cumY += levelH.get(l) + ROW_GAP;
+  // Sort: level ASC → degree DESC → name (parents first, then high-connectivity, then alpha)
+  const sorted = [...tables].sort((a, b) => {
+    const la = levels.get(a.name) ?? 0, lb = levels.get(b.name) ?? 0;
+    if (la !== lb) return la - lb;
+    const da = degree(a.name), db = degree(b.name);
+    if (da !== db) return db - da;
+    return a.name.localeCompare(b.name);
   });
 
-  // Center each row relative to the widest row (funnel/diamond shape)
-  const maxRowCount = Math.max(...sortedLevels.map(l => byLevel.get(l).length));
-  const maxRowPx    = maxRowCount * COL_WIDTH;
+  const N_COLS  = Math.min(5, Math.max(3, Math.ceil(Math.sqrt(sorted.length))));
+  const COL_GAP = 20;
+  const ROW_GAP = 20;
+
+  // Variable row heights: each grid row = tallest node in that row
+  const rowCount = Math.ceil(sorted.length / N_COLS);
+  const rowHeights = Array.from({ length: rowCount }, (_, row) => {
+    let maxH = 0;
+    for (let col = 0; col < N_COLS; col++) {
+      const idx = row * N_COLS + col;
+      if (idx < sorted.length) maxH = Math.max(maxH, estHeight(sorted[idx].name));
+    }
+    return maxH;
+  });
 
   const posMap = new Map();
-  sortedLevels.forEach(level => {
-    const names  = byLevel.get(level);
-    const y      = levelY.get(level);
-    const rowPx  = names.length * COL_WIDTH;
-    const startX = PADDING + (maxRowPx - rowPx) / 2;
-    names.forEach((name, i) => {
-      posMap.set(name, { x: startX + i * COL_WIDTH, y });
-    });
+  sorted.forEach((t, i) => {
+    const col = i % N_COLS;
+    const row = Math.floor(i / N_COLS);
+    const x   = PADDING + col * (COL_WIDTH + COL_GAP);
+    const y   = PADDING + rowHeights.slice(0, row).reduce((s, h) => s + h + ROW_GAP, 0);
+    posMap.set(t.name, { x, y });
   });
 
   return tables.map(t => ({
@@ -357,8 +346,7 @@ function SchemaVisualizerInner({ tables, onBack }) {
         defaultNodes={nodes}
         defaultEdges={edges}
         nodeTypes={NODE_TYPES}
-        fitView
-        fitViewOptions={{ padding: 0.15 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
       >
         <Background color='#333' variant={BackgroundVariant.Lines} />
         <Controls />
