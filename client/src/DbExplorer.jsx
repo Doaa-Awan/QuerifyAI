@@ -6,6 +6,7 @@ import { HiOutlineCircleStack } from 'react-icons/hi2';
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [dialect, setDialect] = useState('sql');
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [hasMessages, setHasMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -18,12 +19,12 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [showVisualizer, setShowVisualizer] = useState(false);
 
   const handleBack = () => {
-    if (typeof onExit === 'function') {
-      void onExit();
-    }
-    if (typeof onBack === 'function') {
-      onBack();
-    }
+    setShowExitConfirm(true);
+  };
+
+  const handleConfirmExit = () => {
+    if (typeof onExit === 'function') void onExit();
+    if (typeof onBack === 'function') onBack();
   };
 
   const handleTablesUsed = (tables) => setHighlightedTables(new Set(tables));
@@ -34,13 +35,29 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
 
   return (
     <div className={`db-explorer-shell${hasMessages ? ' has-messages' : ''}`}>
+      {showExitConfirm && (
+        <div className="exit-confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="exit-confirm-title">
+          <div className="exit-confirm-modal">
+            <h3 id="exit-confirm-title">Exit session?</h3>
+            <p>You will lose your current chat history and query state. This cannot be undone.</p>
+            <div className="exit-confirm-actions">
+              <button className="btn ghost" type="button" onClick={() => setShowExitConfirm(false)}>
+                Cancel
+              </button>
+              <button className="btn danger" type="button" onClick={handleConfirmExit}>
+                Yes, Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <nav className={`db-explorer-nav${hasMessages ? ' db-explorer-nav--floating' : ''}`} aria-label="Explorer actions">
         <button
           className="btn ghost btn-nav btn-back"
           type="button"
           onClick={handleBack}
         >
-          Back
+          Exit
         </button>
         <button
           className="btn ghost btn-nav"

@@ -364,6 +364,56 @@ p {
   order: -1;
 }
 
+.btn.danger {
+  background: #c93e3e;
+  color: #fff;
+  border-color: transparent;
+}
+
+.btn.danger:not(:disabled):hover {
+  background: #b03030;
+}
+
+/* Exit confirmation modal */
+.exit-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.exit-confirm-modal {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+}
+
+.exit-confirm-modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.exit-confirm-modal p {
+  margin: 0 0 1.5rem;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.exit-confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
 /* ——— Dialect toggle (fixed top-right) ——— */
 .dialect-control {
   position: fixed;
