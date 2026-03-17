@@ -20,11 +20,22 @@ const ROW_H    = 28;  // px — must match nodeStyles.colRow height
 // Defined at module level so ReactFlow never re-creates the component reference.
 
 function TableNode({ data }) {
-  const { table, referencedCols, onColHover, onColLeave } = data;
+  const { table, referencedCols, onColHover, onColLeave, highlighted, highlightedCols } = data;
   const [hoveredCol, setHoveredCol] = useState(null);
 
+  const cardStyle = {
+    ...nodeStyles.card,
+    ...(highlighted === 'self'
+      ? { border: '1.5px solid #d06a45',
+          boxShadow: '0 0 0 2px rgba(208,106,69,0.25), 0 4px 16px rgba(0,0,0,0.4)' }
+      : highlighted === 'connected'
+      ? { border: '1.5px solid rgba(208,106,69,0.5)',
+          boxShadow: '0 0 0 1px rgba(208,106,69,0.12), 0 4px 16px rgba(0,0,0,0.4)' }
+      : {}),
+  };
+
   return (
-    <div style={nodeStyles.card}>
+    <div style={cardStyle}>
       <div style={nodeStyles.header}>{table.name}</div>
 
       {table.columns?.map((col, i) => {
@@ -38,7 +49,7 @@ function TableNode({ data }) {
             <div
               style={{
                 ...nodeStyles.colRow,
-                ...(isHovered ? { background: 'rgba(208,106,69,0.13)' } : {}),
+                ...(isHovered || highlightedCols?.has(col.name) ? { background: 'rgba(208,106,69,0.13)' } : {}),
                 cursor: isRelated ? 'crosshair' : 'default',
               }}
               onMouseEnter={isRelated ? () => {
@@ -293,10 +304,10 @@ function buildEdges(tables) {
         sourceHandle: col.name,
         target:       col.foreignTable,
         targetHandle: col.foreignColumn ?? undefined,
-        hidden:       true,                            // hidden until hover
+        hidden:       false,
         type:         'smoothstep',
-        style:        { stroke: '#d06a45', strokeWidth: 1.5, strokeOpacity: 0.9 },
-        markerEnd:    { type: MarkerType.ArrowClosed, color: '#d06a45', width: 12, height: 12 },
+        style:        { stroke: '#555', strokeWidth: 1.5, strokeOpacity: 0.7 },
+        markerEnd:    { type: MarkerType.ArrowClosed, color: '#555', width: 12, height: 12 },
       });
     });
   });
@@ -310,21 +321,58 @@ function buildEdges(tables) {
 const NODE_TYPES = { tableNode: TableNode };
 
 function SchemaVisualizerInner({ tables, onBack }) {
-  const { setEdges } = useReactFlow();
+  const { setEdges, setNodes, getEdges } = useReactFlow();
 
   const showEdgesFor = useCallback((nodeId, colName) => {
-    setEdges(eds => eds.map(e => ({
-      ...e,
-      hidden: !(
+    const connectedNodeCols = new Map();
+    getEdges()
+      .filter(e =>
         (e.source === nodeId && e.sourceHandle === colName) ||
         (e.target === nodeId && e.targetHandle === colName)
-      ),
+      )
+      .forEach(e => {
+        const otherId  = e.source === nodeId ? e.target       : e.source;
+        const otherCol = e.source === nodeId ? e.targetHandle : e.sourceHandle;
+        if (!connectedNodeCols.has(otherId)) connectedNodeCols.set(otherId, new Set());
+        if (otherCol) connectedNodeCols.get(otherId).add(otherCol);
+      });
+
+    setEdges(eds => eds.map(e => {
+      const active =
+        (e.source === nodeId && e.sourceHandle === colName) ||
+        (e.target === nodeId && e.targetHandle === colName);
+      return {
+        ...e,
+        style:     active ? { stroke: '#d06a45', strokeWidth: 1.5, strokeOpacity: 0.9 }
+                          : { stroke: '#555',    strokeWidth: 1.5, strokeOpacity: 0.3 },
+        markerEnd: { type: MarkerType.ArrowClosed,
+                     color: active ? '#d06a45' : '#555', width: 12, height: 12 },
+      };
+    }));
+
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      data: {
+        ...n.data,
+        highlighted:     n.id === nodeId              ? 'self'
+                       : connectedNodeCols.has(n.id)  ? 'connected'
+                       : 'none',
+        highlightedCols: connectedNodeCols.get(n.id) ?? new Set(),
+      },
     })));
-  }, [setEdges]);
+  }, [setEdges, setNodes, getEdges]);
 
   const hideAllEdges = useCallback(() => {
-    setEdges(eds => eds.map(e => ({ ...e, hidden: true })));
-  }, [setEdges]);
+    setEdges(eds => eds.map(e => ({
+      ...e,
+      style:     { stroke: '#555', strokeWidth: 1.5, strokeOpacity: 0.7 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#555', width: 12, height: 12 },
+    })));
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      data: { ...n.data, highlighted: 'none', highlightedCols: new Set() },
+    })));
+  }, [setEdges, setNodes]);
 
   const nodes = useMemo(
     () => buildNodes(tables, showEdgesFor, hideAllEdges),
