@@ -322,9 +322,11 @@ const NODE_TYPES = { tableNode: TableNode };
 
 function SchemaVisualizerInner({ tables, onBack }) {
   const { setEdges, setNodes, getEdges } = useReactFlow();
+  const [colInfo, setColInfo] = useState(null);
 
   const showEdgesFor = useCallback((nodeId, colName) => {
     const connectedNodeCols = new Map();
+    const connections = [];
     getEdges()
       .filter(e =>
         (e.source === nodeId && e.sourceHandle === colName) ||
@@ -335,7 +337,21 @@ function SchemaVisualizerInner({ tables, onBack }) {
         const otherCol = e.source === nodeId ? e.targetHandle : e.sourceHandle;
         if (!connectedNodeCols.has(otherId)) connectedNodeCols.set(otherId, new Set());
         if (otherCol) connectedNodeCols.get(otherId).add(otherCol);
+        connections.push({
+          tableName: otherId,
+          colName:   otherCol,
+          direction: e.source === nodeId ? 'out' : 'in',
+        });
       });
+
+    const colDef = tables.find(t => t.name === nodeId)?.columns?.find(c => c.name === colName);
+    setColInfo({
+      tableName: nodeId,
+      colName,
+      isPrimary: colDef?.isPrimary ?? false,
+      isForeign: colDef?.isForeign ?? false,
+      connections,
+    });
 
     setEdges(eds => eds.map(e => {
       const active =
@@ -360,9 +376,10 @@ function SchemaVisualizerInner({ tables, onBack }) {
         highlightedCols: connectedNodeCols.get(n.id) ?? new Set(),
       },
     })));
-  }, [setEdges, setNodes, getEdges]);
+  }, [setEdges, setNodes, getEdges, tables]);
 
   const hideAllEdges = useCallback(() => {
+    setColInfo(null);
     setEdges(eds => eds.map(e => ({
       ...e,
       style:     { stroke: '#555', strokeWidth: 1.5, strokeOpacity: 0.7 },
@@ -399,6 +416,46 @@ function SchemaVisualizerInner({ tables, onBack }) {
         <Background color='#333' variant={BackgroundVariant.Lines} />
         <Controls />
       </ReactFlow>
+
+      {colInfo && (
+        <div style={{
+          position: 'absolute', bottom: 20, right: 20, zIndex: 10,
+          background: 'var(--surface)', border: '1px solid var(--line)',
+          borderRadius: 8, padding: '12px 14px', minWidth: 220, maxWidth: 300,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)', fontSize: 12,
+          color: 'var(--ink)', fontFamily: 'inherit',
+        }}>
+          <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8,
+                        borderBottom: '1px solid var(--line)', paddingBottom: 8 }}>
+            <span style={{ color: 'var(--muted)' }}>{colInfo.tableName}.</span>
+            {colInfo.colName}
+            {colInfo.isPrimary && (
+              <span style={{ marginLeft: 6, background: '#2a4a2a', color: '#7ecb7e',
+                             borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>PK</span>
+            )}
+            {colInfo.isForeign && (
+              <span style={{ marginLeft: 4, background: '#2a2a4a', color: '#8888e8',
+                             borderRadius: 3, padding: '1px 5px', fontSize: 9, fontWeight: 700 }}>FK</span>
+            )}
+          </div>
+          {colInfo.connections.length === 0 ? (
+            <div style={{ color: 'var(--muted)', fontSize: 11 }}>No relationships</div>
+          ) : (
+            colInfo.connections.map((c, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6,
+                                    padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ color: '#d06a45', fontWeight: 700, fontSize: 13 }}>
+                  {c.direction === 'out' ? '→' : '←'}
+                </span>
+                <span>
+                  <span style={{ color: 'var(--muted)' }}>{c.tableName}.</span>
+                  <strong>{c.colName}</strong>
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
