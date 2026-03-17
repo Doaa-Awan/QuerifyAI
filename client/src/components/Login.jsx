@@ -22,6 +22,7 @@ export default function Login() {
     }
   });
   const [activeDb, setActiveDb] = useState('postgres');
+  const [loading, setLoading] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -105,6 +106,7 @@ export default function Login() {
   };
 
   const connect = async () => {
+    setLoading(true);
     setStatusMessage('Connecting...');
     try {
       const res = await axios.post(`${API_BASE}/db/connect`, { host, port, user, password, database });
@@ -126,10 +128,13 @@ export default function Login() {
       const error = err.response?.data;
       setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect');
       await checkDbStatus();
+    } finally {
+      setLoading(false);
     }
   };
 
   const connectDemo = async () => {
+    setLoading(true);
     setStatusMessage('Connecting to demo DB...');
     try {
       const res = await axios.post(`${API_BASE}/db/connect-demo`);
@@ -151,6 +156,8 @@ export default function Login() {
       const error = err.response?.data;
       setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect to demo DB');
       await checkDbStatus();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,14 +166,19 @@ export default function Login() {
     (async () => {
       const available = await checkDbStatus();
       if (available) {
-        await fetchSchema();
+        setLoading(true);
         try {
-          await generateExplorerContext();
-        } catch {
-          // snapshot refresh failed on page load; proceed anyway
+          await fetchSchema();
+          try {
+            await generateExplorerContext();
+          } catch {
+            // snapshot refresh failed on page load; proceed anyway
+          }
+          localStorage.setItem('querify_connected', 'true');
+          setShowExplorer(true);
+        } finally {
+          setLoading(false);
         }
-        localStorage.setItem('querify_connected', 'true');
-        setShowExplorer(true);
       }
     })();
   }, []);
@@ -197,6 +209,12 @@ export default function Login() {
   return (
     <div className='login-shell'>
       <div className='login-card'>
+        {loading && (
+          <div className='login-loading-overlay'>
+            <div className='login-spinner' />
+            <p className='login-loading-text'>Connecting…</p>
+          </div>
+        )}
         <header className='login-header'>
           <div className='brand'>
             <img
@@ -289,6 +307,7 @@ export default function Login() {
                 className='btn primary'
                 onClick={connect}
                 type='button'
+                disabled={loading}
               >
                 Connect
               </button>
@@ -296,6 +315,7 @@ export default function Login() {
                 className='btn ghost'
                 onClick={connectDemo}
                 type='button'
+                disabled={loading}
               >
                 Use Demo DB
               </button>
