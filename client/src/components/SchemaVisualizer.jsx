@@ -9,7 +9,6 @@ import ReactFlow, {
   ReactFlowProvider,
   useReactFlow,
 } from 'reactflow';
-import 'reactflow/dist/style.css';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
