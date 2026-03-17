@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import ChatBot from './components/chat/ChatBot';
-import ERDModal from './components/ERDModal';
 import SchemaSidebar from './components/SchemaSidebar';
 import SchemaVisualizer from './components/SchemaVisualizer';
-import { HiOutlineSquares2X2, HiOutlineCircleStack } from 'react-icons/hi2';
+import { HiOutlineCircleStack } from 'react-icons/hi2';
 
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [dialect, setDialect] = useState('sql');
@@ -16,7 +15,6 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
     }
   });
   const [highlightedTables, setHighlightedTables] = useState(new Set());
-  const [erdOpen, setErdOpen] = useState(false);
   const [showVisualizer, setShowVisualizer] = useState(false);
 
   const handleBack = () => {
@@ -43,15 +41,6 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
           onClick={handleBack}
         >
           Back
-        </button>
-        <button
-          className="btn ghost btn-nav erd-trigger"
-          type="button"
-          onClick={() => setErdOpen(true)}
-          title="View entity relationship diagram"
-        >
-          <HiOutlineSquares2X2 aria-hidden />
-          <span>View ERD</span>
         </button>
         <button
           className="btn ghost btn-nav"
@@ -93,10 +82,6 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
             <p className="subtitle">Built for developers and analysts navigating databases they did not build.</p>
           </div>
         </header>
-      )}
-
-      {erdOpen && (
-        <ERDModal tables={tables} onClose={() => setErdOpen(false)} />
       )}
 
       <div className="db-explorer-body">
