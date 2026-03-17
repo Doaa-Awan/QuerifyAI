@@ -189,13 +189,15 @@ function buildNodes(tables, onColHover, onColLeave) {
     });
   });
 
-  // Build outgoing FK map (edges within this table set only)
+  // Build outgoing + incoming FK maps (edges within this table set only)
   const outgoing = new Map(tables.map(t => [t.name, new Set()]));
+  const incoming = new Map(tables.map(t => [t.name, new Set()]));
   tables.forEach(t => {
     t.columns?.forEach(col => {
       if (col.isForeign && col.foreignTable &&
           tableNames.has(col.foreignTable) && col.foreignTable !== t.name) {
         outgoing.get(t.name).add(col.foreignTable);
+        incoming.get(col.foreignTable).add(t.name);
       }
     });
   });
@@ -215,7 +217,11 @@ function buildNodes(tables, onColHover, onColLeave) {
   };
   tables.forEach(t => getLevel(t.name));
 
-  // Group tables by level; within each level sort tallest first
+  // degree = distinct tables connected via any FK edge (in or out)
+  const degree = (name) =>
+    (outgoing.get(name)?.size ?? 0) + (incoming.get(name)?.size ?? 0);
+
+  // Group tables by level; within each level sort by degree descending (most connected first)
   const byLevel = new Map();
   tables.forEach(t => {
     const l = levels.get(t.name) ?? 0;
@@ -223,7 +229,7 @@ function buildNodes(tables, onColHover, onColLeave) {
     byLevel.get(l).push(t.name);
   });
   byLevel.forEach(names => {
-    names.sort((a, b) => (tableMap[b]?.columns?.length ?? 0) - (tableMap[a]?.columns?.length ?? 0));
+    names.sort((a, b) => degree(b) - degree(a));
   });
 
   const estHeight = (name) => {
@@ -232,14 +238,35 @@ function buildNodes(tables, onColHover, onColLeave) {
     return HEADER_H + (t.columns?.length ?? 0) * ROW_H;
   };
 
+  // Vertical layout: level 0 = top row (parents), deeper levels below (children)
+  // Within each row: most-connected table leftmost, spread horizontally
+  const sortedLevels = [...byLevel.keys()].sort((a, b) => a - b);
+
+  // Row height per level = tallest node in that level
+  const levelH = new Map(
+    sortedLevels.map(l => [l, Math.max(...byLevel.get(l).map(estHeight))])
+  );
+
+  // Cumulative y offsets per level
+  const levelY = new Map();
+  let cumY = PADDING;
+  sortedLevels.forEach(l => {
+    levelY.set(l, cumY);
+    cumY += levelH.get(l) + ROW_GAP;
+  });
+
+  // Center each row relative to the widest row (funnel/diamond shape)
+  const maxRowCount = Math.max(...sortedLevels.map(l => byLevel.get(l).length));
+  const maxRowPx    = maxRowCount * COL_WIDTH;
+
   const posMap = new Map();
-  [...byLevel.keys()].sort((a, b) => a - b).forEach(level => {
-    const names = byLevel.get(level);
-    const x     = PADDING + level * COL_WIDTH;
-    let   cumY  = PADDING;
-    names.forEach(name => {
-      posMap.set(name, { x, y: cumY });
-      cumY += estHeight(name) + ROW_GAP;
+  sortedLevels.forEach(level => {
+    const names  = byLevel.get(level);
+    const y      = levelY.get(level);
+    const rowPx  = names.length * COL_WIDTH;
+    const startX = PADDING + (maxRowPx - rowPx) / 2;
+    names.forEach((name, i) => {
+      posMap.set(name, { x: startX + i * COL_WIDTH, y });
     });
   });
 
