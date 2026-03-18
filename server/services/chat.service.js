@@ -25,10 +25,19 @@ const tableMetadataPath = path.resolve(__dirname, '../prompts/table-metadata.jso
 const topicCache = new Map();
 const MAX_TOPIC_CACHE = 100;
 
-async function buildInstructions(schemaOverride) {
+const DIALECT_LABEL = {
+  postgres: 'PostgreSQL',
+  postgresql: 'PostgreSQL',
+  sqlserver: 'SQL Server',
+  mssql: 'SQL Server',
+  mysql: 'MySQL',
+};
+
+async function buildInstructions(schemaOverride, dialect) {
   const template = await fs.readFile(path.resolve(__dirname, '../prompts/chatbot.txt'), 'utf8');
   const dbSchema = schemaOverride ?? await fs.readFile(path.resolve(__dirname, '../prompts/db-explorer-context.md'), 'utf8');
-  return template.replace('{{dbSchema}}', dbSchema);
+  const dialectLabel = DIALECT_LABEL[dialect] ?? 'SQL';
+  return template.replace('{{dbSchema}}', dbSchema).replace('{{dialect}}', dialectLabel);
 }
 
 async function loadTableMetadata() {
@@ -146,7 +155,7 @@ function buildPartialSchemaContext(relevantTables, tableMetadata) {
 
 // Public interface
 export const chatService = {
-  async sendMessage(prompt, conversationId) {
+  async sendMessage(prompt, conversationId, dialect) {
     const tableMetadata = await loadTableMetadata();
     let schemaContext = null; // null means use full schema (fallback)
 
@@ -184,7 +193,7 @@ export const chatService = {
       console.log('[chat] no table-metadata.json → using full schema');
     }
 
-    const instructions = await buildInstructions(schemaContext ?? undefined);
+    const instructions = await buildInstructions(schemaContext ?? undefined, dialect);
     const recentMessages = conversationRepository.getRecentMessages(conversationId, 10);
     const messages = [
       { role: 'system', content: instructions },

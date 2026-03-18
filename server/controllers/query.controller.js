@@ -15,6 +15,7 @@ const tableMetadataPath = path.resolve(__dirname, '../prompts/table-metadata.jso
 const querySchema = z.object({
   question: z.string().trim().min(1, 'Question cannot be empty').max(1000, 'Question is too long (max 1000 characters)'),
   conversationId: z.string().uuid('conversationId must be a valid UUID'),
+  dialect: z.string().trim().optional(),
 });
 
 /** Load table names from the metadata file; falls back to [] if missing. */
@@ -38,12 +39,12 @@ export const queryController = {
       return;
     }
 
-    const { question, conversationId } = parseResult.data;
+    const { question, conversationId, dialect } = parseResult.data;
 
     try {
-      // Build cache key from question + current table names
+      // Build cache key from question + dialect + current table names
       const tableNames = await loadTableNames();
-      const cacheKey = queryCache.buildKey(question, tableNames);
+      const cacheKey = queryCache.buildKey(`${dialect ?? ''}:${question}`, tableNames);
 
       // Cache hit — return immediately without calling AI
       const cached = queryCache.get(cacheKey);
@@ -53,7 +54,7 @@ export const queryController = {
       }
 
       // Cache miss — call service
-      const response = await chatService.sendMessage(question, conversationId);
+      const response = await chatService.sendMessage(question, conversationId, dialect);
 
       const result = {
         sql: response.sql ?? null,
