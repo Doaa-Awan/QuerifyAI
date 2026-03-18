@@ -65,7 +65,7 @@ const CopyPre = ({ children, node, ...props }) => {
   );
 };
 
-const ChatMessages = ({ messages }) => {
+const ChatMessages = ({ messages, error }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -85,6 +85,7 @@ const ChatMessages = ({ messages }) => {
           <ReactMarkdown components={{ pre: CopyPre }}>{message.content}</ReactMarkdown>
         </div>
       ))}
+      {error && <div className="chat-message bot-message error-message">{error}</div>}
     </div>
   );
 };

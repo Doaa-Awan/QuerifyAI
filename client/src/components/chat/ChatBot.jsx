@@ -6,7 +6,7 @@ import ChatInput from './ChatInput';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const ChatBot = ({ onTablesUsed, onFirstMessage, dialect }) => {
+const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) => {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -38,11 +38,19 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect }) => {
       setIsBotTyping(true);
       setError('');
       //api call to backend with prompt and conversationId
-      const { data } = await axios.post(`${API_BASE}/api/query`, {
+      const response = await axios.post(`${API_BASE}/api/query`, {
         question: prompt,
         conversationId: conversationId.current,
       });
-      const { sql, explanation, tablesUsed } = data;
+      const { sql, explanation, tablesUsed } = response.data;
+      const rlRemaining = response.headers['ratelimit-remaining'];
+      const rlLimit = response.headers['ratelimit-limit'];
+      const rlReset = response.headers['ratelimit-reset'];
+      if (rlRemaining != null && rlLimit != null) {
+        const info = { remaining: Number(rlRemaining), limit: Number(rlLimit), reset: rlReset ? Number(rlReset) : null };
+        localStorage.setItem('querify_ratelimit', JSON.stringify(info));
+        if (typeof onRateLimitUpdate === 'function') onRateLimitUpdate(info);
+      }
       const content = sql
         ? `${explanation}\n\n\`\`\`sql\n${sql}\n\`\`\``
         : explanation;
@@ -52,7 +60,19 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect }) => {
       }
     } catch (err) {
       console.error('Error submitting prompt:', err);
-      setError('Something went wrong. Please try again.');
+      if (err.response?.status === 429) {
+        const rlRemaining = err.response.headers['ratelimit-remaining'];
+        const rlLimit = err.response.headers['ratelimit-limit'];
+        const rlReset = err.response.headers['ratelimit-reset'];
+        if (rlRemaining != null && rlLimit != null) {
+          const info = { remaining: Number(rlRemaining), limit: Number(rlLimit), reset: rlReset ? Number(rlReset) : null };
+          localStorage.setItem('querify_ratelimit', JSON.stringify(info));
+          if (typeof onRateLimitUpdate === 'function') onRateLimitUpdate(info);
+        }
+        setError(err.response.data?.error || 'Daily query limit reached. Please try again tomorrow.');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
     } finally {
       setIsBotTyping(false);
     }
@@ -70,9 +90,8 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect }) => {
       </div> */}
       <div className='chat-body'>
         <div className='chat-messages-area'>
-          <ChatMessages messages={messages} />
+          <ChatMessages messages={messages} error={error} />
           {isBotTyping && <TypingIndicator />}
-          {error && <p className='error-message'>{error}</p>}
         </div>
         <ChatInput onSubmit={onSubmit} />
       </div>

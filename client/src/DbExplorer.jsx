@@ -4,9 +4,30 @@ import SchemaSidebar from './components/SchemaSidebar';
 import SchemaVisualizer from './components/SchemaVisualizer';
 import { HiOutlineCircleStack } from 'react-icons/hi2';
 
+function RateLimitBadge({ remaining, limit, reset }) {
+  if (remaining == null || limit == null) return null;
+  const hoursLeft = reset ? Math.ceil(reset / 3600) : null;
+  let mod = '';
+  if (remaining <= 0) mod = ' rate-limit-badge--danger';
+  else if (remaining / limit <= 0.5) mod = remaining <= 5 ? ' rate-limit-badge--danger' : ' rate-limit-badge--warn';
+  return (
+    <span className={`rate-limit-badge${mod}`} aria-live="polite">
+      {remaining <= 0
+        ? `Limit reached${hoursLeft ? ` — resets in ${hoursLeft}h` : ''}`
+        : `${remaining} / ${limit} queries left today`}
+    </span>
+  );
+}
+
 export default function DbExplorer({ tables = [], onBack, onExit }) {
   const [dialect, setDialect] = useState('sql');
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState(() => {
+    try {
+      const saved = localStorage.getItem('querify_ratelimit');
+      return saved ? JSON.parse(saved) : { remaining: null, limit: null, reset: null };
+    } catch { return { remaining: null, limit: null, reset: null }; }
+  });
   const [hasMessages, setHasMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -68,6 +89,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
           <HiOutlineCircleStack aria-hidden />
           <span>View Schema</span>
         </button>
+        <RateLimitBadge remaining={rateLimitInfo.remaining} limit={rateLimitInfo.limit} reset={rateLimitInfo.reset} />
       </nav>
 
       <div className="dialect-control">
@@ -103,7 +125,7 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
 
       <div className="db-explorer-body">
         <section className="db-main">
-          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} />
+          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} onRateLimitUpdate={setRateLimitInfo} />
         </section>
 
         <SchemaSidebar tables={tables} highlightedTables={highlightedTables} />
