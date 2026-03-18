@@ -187,6 +187,7 @@ export default function Login() {
     return (
       <DbExplorer
         tables={schema}
+        dialect={activeDb}
         onBack={() => {
           localStorage.removeItem('querify_connected');
           localStorage.removeItem('querify_messages');
