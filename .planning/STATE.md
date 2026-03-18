@@ -108,6 +108,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 4 added: Ensure table schema files populated and cleared
+- Phase 4 added: Implement SQL Server DB Connection Option
 
 ### Pending Todos
 
