@@ -255,6 +255,7 @@ export default function Login() {
     return (
       <DbExplorer
         tables={schema}
+        dialect={activeDb}
         onBack={() => {
           handleDisconnect(connectedDbType);
           setShowExplorer(false);

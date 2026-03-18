@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+const DIALECT_LABEL = { postgres: 'PostgreSQL', sqlserver: 'SQL Server' };
 import ChatBot from './components/chat/ChatBot';
 import SchemaSidebar from './components/SchemaSidebar';
 import SchemaVisualizer from './components/SchemaVisualizer';
@@ -19,8 +21,8 @@ function RateLimitBadge({ remaining, limit, reset }) {
   );
 }
 
-export default function DbExplorer({ tables = [], onBack, onExit }) {
-  const [dialect, setDialect] = useState('sql');
+export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'postgres' }) {
+  const dialectLabel = DIALECT_LABEL[dialect] ?? 'PostgreSQL';
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState(() => {
     try {
@@ -93,24 +95,8 @@ export default function DbExplorer({ tables = [], onBack, onExit }) {
       </nav>
 
       <div className="dialect-control">
-        <span className="dialect-label">Output format</span>
-        <div className="dialect-picker" role="group" aria-label="Query output format">
-          <button
-            className={`dialect-option${dialect === 'sql' ? ' active' : ''}`}
-            type="button"
-            onClick={() => setDialect('sql')}
-          >
-            SQL
-          </button>
-          <button
-            className="dialect-option"
-            type="button"
-            disabled
-            title="PostgreSQL support coming soon"
-          >
-            PostgreSQL <span className="dialect-soon">Soon</span>
-          </button>
-        </div>
+        <span className="dialect-label">Dialect</span>
+        <span className="dialect-option active">{dialectLabel}</span>
       </div>
 
       {!hasMessages && (

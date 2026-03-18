@@ -41,6 +41,7 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) =
       const response = await axios.post(`${API_BASE}/api/query`, {
         question: prompt,
         conversationId: conversationId.current,
+        dialect,
       });
       const { sql, explanation, tablesUsed } = response.data;
       const rlRemaining = response.headers['ratelimit-remaining'];
