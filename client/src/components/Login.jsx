@@ -192,6 +192,7 @@ export default function Login() {
           localStorage.removeItem('querify_messages');
           localStorage.removeItem('querify_conversation_id');
           localStorage.removeItem('querify_schema');
+          localStorage.removeItem('querify_ratelimit');
           clearExplorerContext();
           setShowExplorer(false);
         }}
@@ -200,6 +201,7 @@ export default function Login() {
           localStorage.removeItem('querify_messages');
           localStorage.removeItem('querify_conversation_id');
           localStorage.removeItem('querify_schema');
+          localStorage.removeItem('querify_ratelimit');
           clearExplorerContext();
         }}
       />
