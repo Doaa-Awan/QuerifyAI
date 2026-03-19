@@ -17,6 +17,17 @@ const connectSchema = z.object({
 
 // Public interface
 export const mssqlController = {
+  async connectDemo(req, res) {
+    const result = await mssqlService.connectDemo();
+    if (result.ok) {
+      res.json({ message: 'Connected to demo SQL Server' });
+      return;
+    }
+    res.status(result.status || 500).json({
+      error: result.error || 'Failed to connect to demo SQL Server',
+    });
+  },
+
   async connect(req, res) {
     const parseResult = connectSchema.safeParse(req.body);
     if (!parseResult.success) {

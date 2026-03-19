@@ -26,6 +26,7 @@ router.get('/api/schema', postgresController.getIntrospectedSchema);
 router.post('/db/explorer-context/snapshot', snapshotLimiter, postgresController.buildExplorerSnapshot);
 router.post('/db/explorer-context/clear', postgresController.clearExplorerSnapshot);
 
+router.post('/db/connect-demo-sqlserver', mssqlController.connectDemo);
 router.post('/db/connect-sqlserver', mssqlController.connect);
 router.get('/db/status-sqlserver', mssqlController.getStatus);
 router.get('/health/db-sqlserver', mssqlController.getHealth);

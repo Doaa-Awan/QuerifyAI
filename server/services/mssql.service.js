@@ -101,6 +101,27 @@ async function writeMssqlExplorerSnapshot(pool) {
 
 // Public interface
 export const mssqlService = {
+  async connectDemo() {
+    const demoCfg = {
+      server: process.env.DEMO_DB_HOST_SQL,
+      user: process.env.DEMO_DB_USER_SQL,
+      password: process.env.DEMO_DB_PASSWORD_SQL,
+      database: process.env.DEMO_DB_NAME_SQL,
+    };
+
+    if (isMissingRequiredConfig(demoCfg)) {
+      return { ok: false, error: 'Demo SQL Server credentials are not configured on the server', status: 400 };
+    }
+
+    try { await clearExplorerSnapshotFile(); } catch { /* non-fatal */ }
+
+    const result = await testAndSetDb(demoCfg);
+    if (!result.ok) return { ok: false, error: result.error, status: 500 };
+
+    queryCache.clear();
+    return { ok: true };
+  },
+
   async connect(config) {
     if (isMissingRequiredConfig(config)) {
       return { ok: false, error: 'Server, user and database are required', status: 400 };
