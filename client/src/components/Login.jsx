@@ -217,6 +217,35 @@ export default function Login() {
     }
   };
 
+  const connectDemoSqlServer = async () => {
+    setLoading(true);
+    setStatusMessage('Connecting to demo SQL Server...');
+    try {
+      const res = await axios.post(`${API_BASE}/db/connect-demo-sqlserver`);
+      setStatusMessage(res.data.message || 'Connected to demo');
+      const available = await checkDbStatus('sqlserver');
+      if (available) {
+        await fetchSchema('sqlserver');
+        try {
+          await generateExplorerContext('sqlserver');
+        } catch (err) {
+          setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
+          await checkDbStatus('sqlserver');
+          return;
+        }
+        localStorage.setItem('querify_connected', 'true');
+        localStorage.setItem('querify_db_type', 'sqlserver');
+        setShowExplorer(true);
+      }
+    } catch (err) {
+      const error = err.response?.data;
+      setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect to demo SQL Server');
+      await checkDbStatus('sqlserver');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     (async () => {
@@ -446,6 +475,14 @@ export default function Login() {
                 disabled={loading}
               >
                 Connect
+              </button>
+              <button
+                className='btn ghost'
+                onClick={connectDemoSqlServer}
+                type='button'
+                disabled={loading}
+              >
+                Use Demo DB
               </button>
             </div>
           </div>
