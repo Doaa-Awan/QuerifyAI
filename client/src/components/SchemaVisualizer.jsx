@@ -470,7 +470,16 @@ function SchemaVisualizerInner({ tables, onBack }) {
         defaultNodes={nodes}
         defaultEdges={edges}
         nodeTypes={NODE_TYPES}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.85 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.65 }}
+        onInit={(instance) => {
+          const allNodes = instance.getNodes();
+          if (!allNodes.length) return;
+          const zoom = 0.65;
+          const maxX = Math.max(...allNodes.map(n => n.position.x)) + 260; // 260 = card width
+          const contentW = maxX + 60; // right padding
+          const x = Math.max(0, (window.innerWidth - contentW * zoom) / 2);
+          instance.setViewport({ x, y: 20, zoom });
+        }}
       >
         <Background color='#333' variant={BackgroundVariant.Lines} />
         <Controls />
