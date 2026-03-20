@@ -121,4 +121,8 @@ export const postgresController = {
       error: result.error || 'Failed to connect',
     });
   },
+  async getTableDescriptions(req, res) {
+    const result = await postgresService.getTableDescriptions();
+    res.json(result.body);
+  },
 };

@@ -501,4 +501,16 @@ export const postgresService = {
       return { ok: false, error: err.message, status: 500 };
     }
   },
+  async getTableDescriptions() {
+    try {
+      const content = await fs.readFile(tableMetadataPath, 'utf8');
+      const metadata = JSON.parse(content);
+      const descriptions = Object.fromEntries(
+        Object.entries(metadata).map(([name, val]) => [name, val.description ?? ''])
+      );
+      return { ok: true, body: descriptions };
+    } catch {
+      return { ok: true, body: {} };
+    }
+  },
 };
