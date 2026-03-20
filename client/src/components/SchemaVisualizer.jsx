@@ -19,8 +19,9 @@ const ROW_H    = 28;  // px — must match nodeStyles.colRow height
 // Defined at module level so ReactFlow never re-creates the component reference.
 
 function TableNode({ data }) {
-  const { table, referencedCols, onColHover, onColLeave, highlighted, highlightedCols } = data;
+  const { table, referencedCols, onColHover, onColLeave, onTooltipToggle, highlighted, highlightedCols } = data;
   const [hoveredCol, setHoveredCol] = useState(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const cardStyle = {
     ...nodeStyles.card,
@@ -34,8 +35,18 @@ function TableNode({ data }) {
   };
 
   return (
-    <div style={cardStyle}>
-      <div style={nodeStyles.header}>{table.name}</div>
+    <div style={{ position: 'relative' }}>
+      <div style={cardStyle}>
+      <div style={nodeStyles.header}>
+        {table.name}
+        {table.description && (
+          <span
+            style={nodeStyles.infoIcon}
+            onMouseEnter={() => { setTooltipVisible(true); onTooltipToggle?.(table.name, true); }}
+            onMouseLeave={() => { setTooltipVisible(false); onTooltipToggle?.(table.name, false); }}
+          >i</span>
+        )}
+      </div>
 
       {table.columns?.map((col, i) => {
         const midY        = HEADER_H + i * ROW_H + ROW_H / 2;
@@ -90,6 +101,11 @@ function TableNode({ data }) {
           </Fragment>
         );
       })}
+      </div>
+
+      {tooltipVisible && table.description && (
+        <div style={nodeStyles.tableTooltip}>{table.description}</div>
+      )}
     </div>
   );
 }
@@ -123,6 +139,9 @@ const nodeStyles = {
     color: 'var(--ink)',
     height: HEADER_H,
     boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   colRow: {
     display: 'flex',
@@ -172,13 +191,46 @@ const nodeStyles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
+  tableTooltip: {
+    position: 'absolute',
+    bottom: 'calc(100% + 6px)',
+    right: 0,
+    zIndex: 1000,
+    padding: '0.4rem 0.65rem',
+    fontSize: '0.75rem',
+    color: 'var(--ink)',
+    background: 'var(--surface-strong)',
+    border: '1px solid var(--line)',
+    borderRadius: 8,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    whiteSpace: 'normal',
+    maxWidth: 260,
+    lineHeight: 1.45,
+    pointerEvents: 'none',
+  },
+  infoIcon: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 15,
+    height: 15,
+    borderRadius: '50%',
+    border: '1px solid var(--muted)',
+    color: 'var(--muted)',
+    fontSize: 9,
+    fontWeight: 700,
+    fontStyle: 'italic',
+    flexShrink: 0,
+    cursor: 'default',
+    userSelect: 'none',
+  },
 };
 
 // ── buildNodes ────────────────────────────────────────────────────────────────
 // Layered layout: level 0 = pure parent/reference tables (no outgoing FKs),
 // higher levels = tables with deeper FK chains. Level maps to x-column.
 
-function buildNodes(tables, onColHover, onColLeave) {
+function buildNodes(tables, onColHover, onColLeave, onTooltipToggle) {
   if (!tables?.length) return [];
 
   const COL_WIDTH = 300;
@@ -278,6 +330,7 @@ function buildNodes(tables, onColHover, onColLeave) {
       referencedCols: referencedColsMap.get(t.name),
       onColHover,
       onColLeave,
+      onTooltipToggle,
     },
   }));
 }
@@ -390,9 +443,16 @@ function SchemaVisualizerInner({ tables, onBack }) {
     })));
   }, [setEdges, setNodes]);
 
+  const handleTooltipToggle = useCallback((nodeId, visible) => {
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      zIndex: n.id === nodeId && visible ? 1000 : 0,
+    })));
+  }, [setNodes]);
+
   const nodes = useMemo(
-    () => buildNodes(tables, showEdgesFor, hideAllEdges),
-    [tables, showEdgesFor, hideAllEdges],
+    () => buildNodes(tables, showEdgesFor, hideAllEdges, handleTooltipToggle),
+    [tables, showEdgesFor, hideAllEdges, handleTooltipToggle],
   );
   const edges = useMemo(() => buildEdges(tables), [tables]);
 

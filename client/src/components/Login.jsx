@@ -98,6 +98,21 @@ export default function Login() {
     }
   };
 
+  const mergeDescriptions = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/table-descriptions`);
+      const descMap = res.data;
+      if (!descMap || !Object.keys(descMap).length) return;
+      setSchema((prev) => {
+        const updated = prev.map((t) => ({ ...t, description: descMap[t.name] ?? '' }));
+        localStorage.setItem('querify_schema', JSON.stringify(updated));
+        return updated;
+      });
+    } catch {
+      // non-fatal
+    }
+  };
+
   const generateExplorerContext = async (dbType = 'postgres') => {
     const endpoint =
       dbType === 'sqlserver'
@@ -139,6 +154,7 @@ export default function Login() {
           await checkDbStatus('postgres');
           return;
         }
+        await mergeDescriptions();
         localStorage.setItem('querify_connected', 'true');
         localStorage.setItem('querify_db_type', 'postgres');
         setShowExplorer(true);
@@ -168,6 +184,7 @@ export default function Login() {
           await checkDbStatus('postgres');
           return;
         }
+        await mergeDescriptions();
         localStorage.setItem('querify_connected', 'true');
         localStorage.setItem('querify_db_type', 'postgres');
         setShowExplorer(true);
@@ -204,6 +221,7 @@ export default function Login() {
           await checkDbStatus('sqlserver');
           return;
         }
+        await mergeDescriptions();
         localStorage.setItem('querify_connected', 'true');
         localStorage.setItem('querify_db_type', 'sqlserver');
         setShowExplorer(true);
@@ -233,6 +251,7 @@ export default function Login() {
           await checkDbStatus('sqlserver');
           return;
         }
+        await mergeDescriptions();
         localStorage.setItem('querify_connected', 'true');
         localStorage.setItem('querify_db_type', 'sqlserver');
         setShowExplorer(true);
