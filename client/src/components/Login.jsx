@@ -24,6 +24,14 @@ export default function Login() {
   const [activeDb, setActiveDb] = useState('postgres');
   const [loading, setLoading] = useState(false);
 
+  // SQL Server connection fields
+  const [sqlServer, setSqlServer] = useState('');
+  const [sqlPort, setSqlPort] = useState('1433');
+  const [sqlUser, setSqlUser] = useState('');
+  const [sqlPassword, setSqlPassword] = useState('');
+  const [sqlDatabase, setSqlDatabase] = useState('');
+  const [sqlInstance, setSqlInstance] = useState('');
+
   const API_BASE = import.meta.env.VITE_API_URL || '';
 
   const fetchData = async () => {
@@ -36,9 +44,10 @@ export default function Login() {
     }
   };
 
-  const checkDbStatus = async () => {
+  const checkDbStatus = async (dbType = 'postgres') => {
+    const endpoint = dbType === 'sqlserver' ? '/db/status-sqlserver' : '/db/status';
     try {
-      const res = await axios.get(`${API_BASE}/db/status`);
+      const res = await axios.get(`${API_BASE}${endpoint}`);
       const available = !!res.data.available;
       setDbStatus(available ? 'available' : 'unavailable');
       return available;
@@ -48,9 +57,10 @@ export default function Login() {
     }
   };
 
-  const fetchSchema = async () => {
+  const fetchSchema = async (dbType = 'postgres') => {
+    const endpoint = dbType === 'sqlserver' ? '/db/schema-sqlserver' : '/db/schema';
     try {
-      const res = await axios.get(`${API_BASE}/db/schema`);
+      const res = await axios.get(`${API_BASE}${endpoint}`);
       const rows = Array.isArray(res.data) ? res.data : [];
       const tableMap = rows.reduce((acc, row) => {
         const name = typeof row === 'string' ? row : row.table_name;
@@ -88,18 +98,26 @@ export default function Login() {
     }
   };
 
-  const generateExplorerContext = async () => {
+  const generateExplorerContext = async (dbType = 'postgres') => {
+    const endpoint =
+      dbType === 'sqlserver'
+        ? '/db/explorer-context-sqlserver/snapshot'
+        : '/db/explorer-context/snapshot';
     try {
-      await axios.post(`${API_BASE}/db/explorer-context/snapshot`);
+      await axios.post(`${API_BASE}${endpoint}`);
     } catch (err) {
       console.error('Failed to generate DB explorer context', err);
       throw err;
     }
   };
 
-  const clearExplorerContext = async () => {
+  const clearExplorerContext = async (dbType = 'postgres') => {
+    const endpoint =
+      dbType === 'sqlserver'
+        ? '/db/explorer-context-sqlserver/clear'
+        : '/db/explorer-context/clear';
     try {
-      await axios.post(`${API_BASE}/db/explorer-context/clear`);
+      await axios.post(`${API_BASE}${endpoint}`);
     } catch (err) {
       console.error('Failed to clear DB explorer context', err);
     }
@@ -111,23 +129,24 @@ export default function Login() {
     try {
       const res = await axios.post(`${API_BASE}/db/connect`, { host, port, user, password, database });
       setStatusMessage(res.data.message || 'Connected');
-      const available = await checkDbStatus();
+      const available = await checkDbStatus('postgres');
       if (available) {
-        await fetchSchema();
+        await fetchSchema('postgres');
         try {
-          await generateExplorerContext();
+          await generateExplorerContext('postgres');
         } catch (err) {
           setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
-          await checkDbStatus();
+          await checkDbStatus('postgres');
           return;
         }
         localStorage.setItem('querify_connected', 'true');
+        localStorage.setItem('querify_db_type', 'postgres');
         setShowExplorer(true);
       }
     } catch (err) {
       const error = err.response?.data;
       setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect');
-      await checkDbStatus();
+      await checkDbStatus('postgres');
     } finally {
       setLoading(false);
     }
@@ -139,23 +158,89 @@ export default function Login() {
     try {
       const res = await axios.post(`${API_BASE}/db/connect-demo`);
       setStatusMessage(res.data.message || 'Connected to demo');
-      const available = await checkDbStatus();
+      const available = await checkDbStatus('postgres');
       if (available) {
-        await fetchSchema();
+        await fetchSchema('postgres');
         try {
-          await generateExplorerContext();
+          await generateExplorerContext('postgres');
         } catch (err) {
           setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
-          await checkDbStatus();
+          await checkDbStatus('postgres');
           return;
         }
         localStorage.setItem('querify_connected', 'true');
+        localStorage.setItem('querify_db_type', 'postgres');
         setShowExplorer(true);
       }
     } catch (err) {
       const error = err.response?.data;
       setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect to demo DB');
-      await checkDbStatus();
+      await checkDbStatus('postgres');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const connectSqlServer = async () => {
+    setLoading(true);
+    setStatusMessage('Connecting...');
+    try {
+      const res = await axios.post(`${API_BASE}/db/connect-sqlserver`, {
+        server: sqlServer,
+        port: sqlPort,
+        user: sqlUser,
+        password: sqlPassword,
+        database: sqlDatabase,
+        instanceName: sqlInstance || undefined,
+      });
+      setStatusMessage(res.data.message || 'Connected');
+      const available = await checkDbStatus('sqlserver');
+      if (available) {
+        await fetchSchema('sqlserver');
+        try {
+          await generateExplorerContext('sqlserver');
+        } catch (err) {
+          setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
+          await checkDbStatus('sqlserver');
+          return;
+        }
+        localStorage.setItem('querify_connected', 'true');
+        localStorage.setItem('querify_db_type', 'sqlserver');
+        setShowExplorer(true);
+      }
+    } catch (err) {
+      const error = err.response?.data;
+      setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect to SQL Server');
+      await checkDbStatus('sqlserver');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const connectDemoSqlServer = async () => {
+    setLoading(true);
+    setStatusMessage('Connecting to demo SQL Server...');
+    try {
+      const res = await axios.post(`${API_BASE}/db/connect-demo-sqlserver`);
+      setStatusMessage(res.data.message || 'Connected to demo');
+      const available = await checkDbStatus('sqlserver');
+      if (available) {
+        await fetchSchema('sqlserver');
+        try {
+          await generateExplorerContext('sqlserver');
+        } catch (err) {
+          setStatusMessage(err.response?.data?.error ?? 'Failed to generate schema context');
+          await checkDbStatus('sqlserver');
+          return;
+        }
+        localStorage.setItem('querify_connected', 'true');
+        localStorage.setItem('querify_db_type', 'sqlserver');
+        setShowExplorer(true);
+      }
+    } catch (err) {
+      const error = err.response?.data;
+      setStatusMessage(error?.error ? `${error.error}${error.details ? `: ${error.details}` : ''}` : 'Failed to connect to demo SQL Server');
+      await checkDbStatus('sqlserver');
     } finally {
       setLoading(false);
     }
@@ -164,13 +249,14 @@ export default function Login() {
   useEffect(() => {
     fetchData();
     (async () => {
-      const available = await checkDbStatus();
+      const savedDbType = localStorage.getItem('querify_db_type') || 'postgres';
+      const available = await checkDbStatus(savedDbType);
       if (available) {
         setLoading(true);
         try {
-          await fetchSchema();
+          await fetchSchema(savedDbType);
           try {
-            await generateExplorerContext();
+            await generateExplorerContext(savedDbType);
           } catch {
             // snapshot refresh failed on page load; proceed anyway
           }
@@ -183,27 +269,28 @@ export default function Login() {
     })();
   }, []);
 
+  const handleDisconnect = (dbType = 'postgres') => {
+    localStorage.removeItem('querify_connected');
+    localStorage.removeItem('querify_messages');
+    localStorage.removeItem('querify_conversation_id');
+    localStorage.removeItem('querify_schema');
+    localStorage.removeItem('querify_ratelimit');
+    localStorage.removeItem('querify_db_type');
+    clearExplorerContext(dbType);
+  };
+
   if (showExplorer) {
+    const connectedDbType = localStorage.getItem('querify_db_type') || 'postgres';
     return (
       <DbExplorer
         tables={schema}
         dialect={activeDb}
         onBack={() => {
-          localStorage.removeItem('querify_connected');
-          localStorage.removeItem('querify_messages');
-          localStorage.removeItem('querify_conversation_id');
-          localStorage.removeItem('querify_schema');
-          localStorage.removeItem('querify_ratelimit');
-          clearExplorerContext();
+          handleDisconnect(connectedDbType);
           setShowExplorer(false);
         }}
         onExit={() => {
-          localStorage.removeItem('querify_connected');
-          localStorage.removeItem('querify_messages');
-          localStorage.removeItem('querify_conversation_id');
-          localStorage.removeItem('querify_schema');
-          localStorage.removeItem('querify_ratelimit');
-          clearExplorerContext();
+          handleDisconnect(connectedDbType);
         }}
       />
     );
@@ -254,7 +341,7 @@ export default function Login() {
             onClick={() => setActiveDb('sqlserver')}
             type='button'
           >
-            SQL Server <span className='tab-note'>Coming soon</span>
+            SQL Server
           </button>
         </div>
 
@@ -325,30 +412,31 @@ export default function Login() {
             </div>
           </div>
         ) : (
-          <div className='panel panel-disabled'>
+          <div className='panel'>
             <div className='fields-grid'>
               <div className='field'>
                 <label htmlFor='ms-server'>Server</label>
                 <input
                   id='ms-server'
-                  placeholder='localhost\\SQLEXPRESS'
-                  disabled
+                  value={sqlServer}
+                  onChange={(e) => setSqlServer(e.target.value)}
+                  placeholder='localhost'
                 />
               </div>
               <div className='field'>
                 <label htmlFor='ms-port'>Port</label>
                 <input
                   id='ms-port'
-                  placeholder='1433'
-                  disabled
+                  value={sqlPort}
+                  onChange={(e) => setSqlPort(e.target.value)}
                 />
               </div>
               <div className='field'>
                 <label htmlFor='ms-user'>User</label>
                 <input
                   id='ms-user'
-                  placeholder='sa'
-                  disabled
+                  value={sqlUser}
+                  onChange={(e) => setSqlUser(e.target.value)}
                 />
               </div>
               <div className='field'>
@@ -356,42 +444,43 @@ export default function Login() {
                 <input
                   id='ms-password'
                   type='password'
-                  placeholder='********'
-                  disabled
+                  value={sqlPassword}
+                  onChange={(e) => setSqlPassword(e.target.value)}
                 />
               </div>
               <div className='field'>
                 <label htmlFor='ms-database'>Database</label>
                 <input
                   id='ms-database'
-                  placeholder='master'
-                  disabled
+                  value={sqlDatabase}
+                  onChange={(e) => setSqlDatabase(e.target.value)}
                 />
               </div>
               <div className='field'>
                 <label htmlFor='ms-instance'>Instance (optional)</label>
                 <input
                   id='ms-instance'
+                  value={sqlInstance}
+                  onChange={(e) => setSqlInstance(e.target.value)}
                   placeholder='SQLEXPRESS'
-                  disabled
                 />
               </div>
             </div>
 
-            <div className='notice'>SQL Server connections are disabled for now.</div>
-
             <div className='actions'>
               <button
                 className='btn primary'
+                onClick={connectSqlServer}
                 type='button'
-                disabled
+                disabled={loading}
               >
                 Connect
               </button>
               <button
                 className='btn ghost'
+                onClick={connectDemoSqlServer}
                 type='button'
-                disabled
+                disabled={loading}
               >
                 Use Demo DB
               </button>

@@ -376,7 +376,7 @@ async function clearExplorerSnapshotFile() {
   }
 }
 
-export { sanitizeSamples, clearExplorerSnapshotFile, writeExplorerSnapshot };
+export { sanitizeSamples, buildSnapshotMarkdown, generateTableDescriptions, writeTableMetadata, clearExplorerSnapshotFile, writeExplorerSnapshot };
 
 // Public interface
 export const postgresService = {
