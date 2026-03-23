@@ -74,7 +74,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 1 of 2 (Query API and Memory Safety)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-10 — Plan 01-01 complete (POST /api/query + FIFO cache)
+Last activity: 2026-03-23 - Completed quick task 1: fix auto-connect to demo DB on load/refresh
 
 Progress: [█████░░░░░] 50%
 
@@ -135,6 +135,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | fix auto-connect to demo DB on load/refresh | 2026-03-23 | c79294f | [1-fix-auto-connect-to-demo-db-on-load-refr](./quick/1-fix-auto-connect-to-demo-db-on-load-refr/) |
 
 ### Blockers/Concerns
 
