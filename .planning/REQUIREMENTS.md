@@ -40,9 +40,9 @@ Requirements for this milestone. Each maps to one of 3 roadmap phases.
 
 ### Demo UX
 
-- [ ] **UX-01**: Cold start handler polls `GET /health` with exponential backoff (3s base, up to ~90s); shows "Waking up the server..." message after 3s delay; resolves silently on success
-- [ ] **UX-02**: Rate limit banner reads `X-RateLimit-Remaining` header and shows three states: info (≥10 remaining), warning (1–9 remaining), blocked (0 remaining); dismissible in info state; persistent in warning/blocked
-- [ ] **UX-03**: Rate limit banner appears inside the chat interface, not on the login/connect screen
+- [x] **UX-01**: Cold start handler polls `GET /health` with exponential backoff (3s base, up to ~90s); shows "Waking up the server..." message after 3s delay; resolves silently on success
+- [x] **UX-02**: Rate limit banner reads `X-RateLimit-Remaining` header and shows three states: info (≥10 remaining), warning (1–9 remaining), blocked (0 remaining); dismissible in info state; persistent in warning/blocked
+- [x] **UX-03**: Rate limit banner appears inside the chat interface, not on the login/connect screen
 
 ## v2 Requirements
 
@@ -102,9 +102,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEPL-04 | Phase 3 | Complete |
 | DEPL-05 | Phase 3 | Complete |
 | DEPL-06 | Phase 3 | Pending |
-| UX-01 | Phase 3 | Pending |
-| UX-02 | Phase 3 | Pending |
-| UX-03 | Phase 3 | Pending |
+| UX-01 | Phase 3 | Complete |
+| UX-02 | Phase 3 | Complete |
+| UX-03 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total

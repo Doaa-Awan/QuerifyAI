@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 02-deployment-and-demo-ux/02-01-PLAN.md
-last_updated: "2026-03-23T00:12:46.609Z"
+stopped_at: Completed 02-deployment-and-demo-ux/02-02-PLAN.md
+last_updated: "2026-03-23T00:17:32.758Z"
 last_activity: 2026-03-10 — Plan 01-01 complete (POST /api/query + FIFO cache)
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 ---
@@ -100,6 +100,7 @@ Progress: [█████░░░░░] 50%
 | Phase 04-ensure-table-schema-files-populated-and-cleared P01 | 15 | 3 tasks | 3 files |
 | Phase 04-ensure-table-schema-files-populated-and-cleared P02 | 5 | 2 tasks | 2 files |
 | Phase 02-deployment-and-demo-ux P01 | 2 | 2 tasks | 8 files |
+| Phase 02-deployment-and-demo-ux P02 | 8 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -123,6 +124,8 @@ Recent decisions affecting current work:
 - [Phase 02-deployment-and-demo-ux]: sameSite set to none in production/lax in dev for cross-origin Railway+Vercel session cookies
 - [Phase 02-deployment-and-demo-ux]: legacyHeaders: true on rate limiters so ChatBot.jsx reads x-ratelimit-remaining
 - [Phase 02-deployment-and-demo-ux]: railway.toml rootDirectory must be configured in Railway dashboard to point to server/
+- [Phase 02-deployment-and-demo-ux]: CSS variables adapted to project token names (--surface, --line, --muted, --accent) rather than --color-* names from plan spec
+- [Phase 02-deployment-and-demo-ux]: ChatInput disabled prop applied to both textarea and submit button for complete blocked-state input prevention
 
 ### Roadmap Evolution
 
@@ -141,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T00:12:46.602Z
-Stopped at: Completed 02-deployment-and-demo-ux/02-01-PLAN.md
+Last session: 2026-03-23T00:17:27.658Z
+Stopped at: Completed 02-deployment-and-demo-ux/02-02-PLAN.md
 Resume file: None
