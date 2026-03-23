@@ -31,11 +31,11 @@ Requirements for this milestone. Each maps to one of 3 roadmap phases.
 
 ### Deployment
 
-- [ ] **DEPL-01**: `express-session` cookie uses `sameSite: 'none'` and `secure: true` in production (env-gated)
-- [ ] **DEPL-02**: Frontend API calls use `import.meta.env.VITE_API_URL ?? ''` as base URL; dev proxy still works with empty string
-- [ ] **DEPL-03**: `GET /health` endpoint returns `200 OK` for Railway health check probe
-- [ ] **DEPL-04**: `vercel.json` includes SPA routing rewrite (`"/*" → "/index.html"`)
-- [ ] **DEPL-05**: `railway.toml` or Railway dashboard configured with `rootDirectory: server`, correct build/start commands
+- [x] **DEPL-01**: `express-session` cookie uses `sameSite: 'none'` and `secure: true` in production (env-gated)
+- [x] **DEPL-02**: Frontend API calls use `import.meta.env.VITE_API_URL ?? ''` as base URL; dev proxy still works with empty string
+- [x] **DEPL-03**: `GET /health` endpoint returns `200 OK` for Railway health check probe
+- [x] **DEPL-04**: `vercel.json` includes SPA routing rewrite (`"/*" → "/index.html"`)
+- [x] **DEPL-05**: `railway.toml` or Railway dashboard configured with `rootDirectory: server`, correct build/start commands
 - [ ] **DEPL-06**: Supabase demo DB connection env vars (already provisioned — set `DEMO_DB_HOST`, `DEMO_DB_USER`, `DEMO_DB_PASSWORD`, `DEMO_DB_NAME`) in Railway
 
 ### Demo UX
@@ -96,11 +96,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ERD-04 | Phase 2 | Pending |
 | ERD-05 | Phase 2 | Pending |
 | ERD-06 | Phase 2 | Pending |
-| DEPL-01 | Phase 3 | Pending |
-| DEPL-02 | Phase 3 | Pending |
-| DEPL-03 | Phase 3 | Pending |
-| DEPL-04 | Phase 3 | Pending |
-| DEPL-05 | Phase 3 | Pending |
+| DEPL-01 | Phase 3 | Complete |
+| DEPL-02 | Phase 3 | Complete |
+| DEPL-03 | Phase 3 | Complete |
+| DEPL-04 | Phase 3 | Complete |
+| DEPL-05 | Phase 3 | Complete |
 | DEPL-06 | Phase 3 | Pending |
 | UX-01 | Phase 3 | Pending |
 | UX-02 | Phase 3 | Pending |

@@ -56,14 +56,14 @@ Phases execute in numeric order: 1 → 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Query API and Memory Safety | 2/2 | Complete   | 2002-03-10 |
-| 2. Deployment and Demo UX | 0/3 | Not started | - |
+| 2. Deployment and Demo UX | 1/3 | In Progress|  |
 
 ### Phase 3: Ensure table schema files populated and cleared
 
 **Goal:** Snapshot file lifecycle is explicit, safe, and tested — runtime-only files never appear in git, server startup never fails due to cleanup errors, and a DB or disk failure during snapshot generation is swallowed non-fatally
 **Requirements**: TBD
 **Depends on:** Phase 2
-**Plans:** 2/2 plans complete
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Remove snapshot files from git index, fix startup catch to emit console.warn, wrap writeExplorerSnapshot in outer non-fatal try/catch

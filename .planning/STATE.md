@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-22T23:34:48.746Z"
+stopped_at: Completed 02-deployment-and-demo-ux/02-01-PLAN.md
+last_updated: "2026-03-23T00:12:46.609Z"
 last_activity: 2026-03-10 — Plan 01-01 complete (POST /api/query + FIFO cache)
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
+  total_plans: 3
+  completed_plans: 2
 ---
 
 ---
@@ -99,6 +99,7 @@ Progress: [█████░░░░░] 50%
 | Phase 01-query-api-and-memory-safety P02 | 2 min | 2 tasks | 5 files |
 | Phase 04-ensure-table-schema-files-populated-and-cleared P01 | 15 | 3 tasks | 3 files |
 | Phase 04-ensure-table-schema-files-populated-and-cleared P02 | 5 | 2 tasks | 2 files |
+| Phase 02-deployment-and-demo-ux P01 | 2 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,9 @@ Recent decisions affecting current work:
 - [Phase 04-ensure-table-schema-files-populated-and-cleared]: table-metadata.json was already untracked; db-explorer-context.md was the only file needing git rm --cached
 - [Phase 04-ensure-table-schema-files-populated-and-cleared]: writeExplorerSnapshot outer try/catch swallows all errors non-fatally; inner catch for generateTableDescriptions preserved
 - [Phase 04-ensure-table-schema-files-populated-and-cleared]: writeExplorerSnapshot added to named exports for direct testability (one-word change to export line)
+- [Phase 02-deployment-and-demo-ux]: sameSite set to none in production/lax in dev for cross-origin Railway+Vercel session cookies
+- [Phase 02-deployment-and-demo-ux]: legacyHeaders: true on rate limiters so ChatBot.jsx reads x-ratelimit-remaining
+- [Phase 02-deployment-and-demo-ux]: railway.toml rootDirectory must be configured in Railway dashboard to point to server/
 
 ### Roadmap Evolution
 
@@ -137,6 +141,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T23:34:48.740Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-deployment-and-demo-ux/02-CONTEXT.md
+Last session: 2026-03-23T00:12:46.602Z
+Stopped at: Completed 02-deployment-and-demo-ux/02-01-PLAN.md
+Resume file: None
