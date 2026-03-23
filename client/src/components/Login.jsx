@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import postgresLogo from '/icons8-postgres.svg';
 import DbExplorer from '../DbExplorer.jsx';
+import { API_BASE } from '../api.js';
 
 export default function Login() {
   const [data, setData] = useState({ message: 'Loading...' });
@@ -31,8 +32,6 @@ export default function Login() {
   const [sqlPassword, setSqlPassword] = useState('');
   const [sqlDatabase, setSqlDatabase] = useState('');
   const [sqlInstance, setSqlInstance] = useState('');
-
-  const API_BASE = import.meta.env.VITE_API_URL || '';
 
   const fetchData = async () => {
     try {
