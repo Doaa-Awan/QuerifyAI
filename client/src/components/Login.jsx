@@ -268,6 +268,8 @@ export default function Login() {
   useEffect(() => {
     fetchData();
     (async () => {
+      const wasConnected = localStorage.getItem('querify_connected') === 'true';
+      if (!wasConnected) return;
       const savedDbType = localStorage.getItem('querify_db_type') || 'postgres';
       const available = await checkDbStatus(savedDbType);
       if (available) {
