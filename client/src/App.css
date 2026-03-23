@@ -1126,3 +1126,59 @@ p {
     font-size: 0.8rem;
   }
 }
+
+/* ── Cold Start Banner ───────────────────────────────────────────────────── */
+.cold-start-banner {
+  padding: 0.5rem 1rem;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+.cold-start-banner--error {
+  border-color: #c0392b;
+  color: #e74c3c;
+}
+
+/* ── Rate Limit Banner ───────────────────────────────────────────────────── */
+.rate-limit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+.rate-limit-banner--info {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--ink);
+}
+.rate-limit-banner__dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+.rate-limit-banner--warning {
+  background: color-mix(in srgb, #f39c12 15%, transparent);
+  border: 1px solid color-mix(in srgb, #f39c12 40%, transparent);
+  color: #f39c12;
+}
+.rate-limit-banner--blocked {
+  background: color-mix(in srgb, #c0392b 15%, transparent);
+  border: 1px solid color-mix(in srgb, #c0392b 40%, transparent);
+  color: #e74c3c;
+}
+.rate-limit-banner--blocked a {
+  color: inherit;
+  text-decoration: underline;
+}

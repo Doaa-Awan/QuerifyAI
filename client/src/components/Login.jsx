@@ -3,6 +3,7 @@ import axios from 'axios';
 import postgresLogo from '/icons8-postgres.svg';
 import DbExplorer from '../DbExplorer.jsx';
 import { API_BASE } from '../api.js';
+import ColdStartBanner from './ColdStartBanner.jsx';
 
 export default function Login() {
   const [data, setData] = useState({ message: 'Loading...' });
@@ -315,6 +316,8 @@ export default function Login() {
   }
 
   return (
+    <>
+    <ColdStartBanner />
     <div className='login-shell'>
       <div className='login-card'>
         {loading && (
@@ -507,5 +510,6 @@ export default function Login() {
         )}
       </div>
     </div>
+    </>
   );
 }
