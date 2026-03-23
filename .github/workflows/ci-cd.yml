@@ -194,7 +194,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Deploy to Vercel
-        working-directory: client
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
