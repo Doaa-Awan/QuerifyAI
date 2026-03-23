@@ -13,11 +13,16 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Implementation detail
-const client = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+let _client = null;
+function getClient() {
+  if (!_client) {
+    _client = new OpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
+    });
+  }
+  return _client;
+}
 
 const tableMetadataPath = path.resolve(__dirname, '../prompts/table-metadata.json');
 
@@ -85,7 +90,7 @@ Query: "${query}"
 Respond with ONLY a JSON array of relevant table names, e.g. ["table1", "table2"]. Return [] if no tables are clearly relevant.`;
 
   try {
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0,
@@ -201,7 +206,7 @@ export const chatService = {
       { role: 'user', content: prompt },
     ];
 
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
       model: 'gpt-4o-mini',
       messages,
       temperature: 0.2,

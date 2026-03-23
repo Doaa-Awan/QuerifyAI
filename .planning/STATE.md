@@ -74,7 +74,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 1 of 2 (Query API and Memory Safety)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-23 - Completed quick task 1: fix auto-connect to demo DB on load/refresh
+Last activity: 2026-03-23 - Completed quick task 3: fix ci-cd testing before main branch is pushed to production
 
 Progress: [█████░░░░░] 50%
 
@@ -141,6 +141,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | fix auto-connect to demo DB on load/refresh | 2026-03-23 | c79294f | [1-fix-auto-connect-to-demo-db-on-load-refr](./quick/1-fix-auto-connect-to-demo-db-on-load-refr/) |
+| 3 | fix ci-cd testing before main branch is pushed to production | 2026-03-23 | — | [3-fix-ci-cd-testing-before-main-branch-is-](./quick/3-fix-ci-cd-testing-before-main-branch-is-/) |
 
 ### Blockers/Concerns
 

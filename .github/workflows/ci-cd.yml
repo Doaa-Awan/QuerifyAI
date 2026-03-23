@@ -16,8 +16,6 @@ jobs:
   test:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    env:
-      OPENROUTER_API_KEY: dummy-key-for-ci
     strategy:
       fail-fast: true
       matrix:
@@ -56,6 +54,13 @@ jobs:
     name: API health checks
     runs-on: ubuntu-latest
     needs: test
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      DEMO_DB_HOST: ${{ secrets.DEMO_DB_HOST }}
+      DEMO_DB_PORT: ${{ secrets.DEMO_DB_PORT }}
+      DEMO_DB_USER: ${{ secrets.DEMO_DB_USER }}
+      DEMO_DB_PASSWORD: ${{ secrets.DEMO_DB_PASSWORD }}
+      DEMO_DB_NAME: ${{ secrets.DEMO_DB_NAME }}
 
     steps:
       - uses: actions/checkout@v4
@@ -77,6 +82,7 @@ jobs:
           SESSION_SECRET: ci-test-secret
           ALLOWED_ORIGINS: http://localhost:5173
           NODE_ENV: test
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node server.js &
 
       - name: Wait for server to be ready
@@ -118,6 +124,25 @@ jobs:
             -d '{"question":"How many users?","conversationId":"123e4567-e89b-12d3-a456-426614174000"}')
           echo "Status: $code"
           [ "$code" != "400" ]
+
+      - name: Connect to demo DB (skipped if DEMO_DB_HOST not set)
+        if: ${{ env.DEMO_DB_HOST != '' }}
+        run: |
+          code=$(curl -s -o /tmp/connect-resp.txt -w "%{http_code}" \
+            -c /tmp/ci-cookies.txt \
+            -X POST http://localhost:5000/api/connect \
+            -H "Content-Type: application/json" \
+            -d "{\"host\":\"$DEMO_DB_HOST\",\"port\":$DEMO_DB_PORT,\"user\":\"$DEMO_DB_USER\",\"password\":\"$DEMO_DB_PASSWORD\",\"database\":\"$DEMO_DB_NAME\",\"ssl\":true}")
+          cat /tmp/connect-resp.txt
+          echo "Status: $code"
+          [ "$code" = "200" ]
+
+      - name: DB health check (skipped if DEMO_DB_HOST not set)
+        if: ${{ env.DEMO_DB_HOST != '' }}
+        run: |
+          res=$(curl -sf -b /tmp/ci-cookies.txt http://localhost:5000/health/db)
+          echo "$res"
+          echo "$res" | grep -q '"status"'
 
       - name: Live AI smoke test (skipped if OPENROUTER_API_KEY not set)
         if: ${{ env.OPENROUTER_API_KEY != '' }}
