@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const DISMISS_KEY = 'querify_ratelimit_dismissed';
 
@@ -7,14 +7,6 @@ export default function RateLimitBanner({ remaining }) {
     try { return localStorage.getItem(DISMISS_KEY) === 'true'; }
     catch { return false; }
   });
-
-  // Reset dismissal when remaining drops below 10 (re-show warning/blocked states)
-  useEffect(() => {
-    if (remaining != null && remaining < 10) {
-      setDismissed(false);
-      localStorage.removeItem(DISMISS_KEY);
-    }
-  }, [remaining]);
 
   if (remaining == null) return null;
 

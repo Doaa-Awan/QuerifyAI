@@ -6,7 +6,7 @@ import { API_BASE } from '../api.js';
 import ColdStartBanner from './ColdStartBanner.jsx';
 
 export default function Login() {
-  const [data, setData] = useState({ message: 'Loading...' });
+  const [_data, setData] = useState({ message: 'Loading...' });
   const [host, setHost] = useState('');
   const [port, setPort] = useState('5432');
   const [user, setUser] = useState('');
