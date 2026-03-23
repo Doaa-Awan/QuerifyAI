@@ -4,7 +4,8 @@ const DIALECT_LABEL = { postgres: 'PostgreSQL', sqlserver: 'SQL Server' };
 import ChatBot from './components/chat/ChatBot';
 import SchemaSidebar from './components/SchemaSidebar';
 import SchemaVisualizer from './components/SchemaVisualizer';
-import { HiOutlineCircleStack } from 'react-icons/hi2';
+import RateLimitBanner from './components/RateLimitBanner.jsx';
+import { HiOutlineCircleStack, HiOutlineTableCells } from 'react-icons/hi2';
 
 function RateLimitBadge({ remaining, limit, reset }) {
   if (remaining == null || limit == null) return null;
@@ -30,6 +31,7 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
       return saved ? JSON.parse(saved) : { remaining: null, limit: null, reset: null };
     } catch { return { remaining: null, limit: null, reset: null }; }
   });
+  const isBlocked = rateLimitInfo.remaining != null && rateLimitInfo.remaining <= 0;
   const [hasMessages, setHasMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -40,6 +42,7 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
   });
   const [highlightedTables, setHighlightedTables] = useState(new Set());
   const [showVisualizer, setShowVisualizer] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleBack = () => {
     setShowExitConfirm(true);
@@ -91,6 +94,16 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
           <HiOutlineCircleStack aria-hidden />
           <span>View Schema</span>
         </button>
+        <button
+          className="btn ghost btn-nav btn-schema-toggle"
+          type="button"
+          onClick={() => setSidebarOpen(v => !v)}
+          aria-expanded={sidebarOpen}
+          aria-label="Toggle schema sidebar"
+        >
+          <HiOutlineTableCells aria-hidden />
+          <span>Tables</span>
+        </button>
         <RateLimitBadge remaining={rateLimitInfo.remaining} limit={rateLimitInfo.limit} reset={rateLimitInfo.reset} />
       </nav>
 
@@ -111,10 +124,11 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
 
       <div className="db-explorer-body">
         <section className="db-main">
-          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} onRateLimitUpdate={setRateLimitInfo} />
+          <RateLimitBanner remaining={rateLimitInfo.remaining} />
+          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} onRateLimitUpdate={setRateLimitInfo} isBlocked={isBlocked} />
         </section>
 
-        <SchemaSidebar tables={tables} highlightedTables={highlightedTables} />
+        <SchemaSidebar tables={tables} highlightedTables={highlightedTables} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import postgresLogo from '/icons8-postgres.svg';
 import DbExplorer from '../DbExplorer.jsx';
+import { API_BASE } from '../api.js';
+import ColdStartBanner from './ColdStartBanner.jsx';
 
 export default function Login() {
   const [data, setData] = useState({ message: 'Loading...' });
@@ -31,8 +33,6 @@ export default function Login() {
   const [sqlPassword, setSqlPassword] = useState('');
   const [sqlDatabase, setSqlDatabase] = useState('');
   const [sqlInstance, setSqlInstance] = useState('');
-
-  const API_BASE = import.meta.env.VITE_API_URL || '';
 
   const fetchData = async () => {
     try {
@@ -268,6 +268,8 @@ export default function Login() {
   useEffect(() => {
     fetchData();
     (async () => {
+      const wasConnected = localStorage.getItem('querify_connected') === 'true';
+      if (!wasConnected) return;
       const savedDbType = localStorage.getItem('querify_db_type') || 'postgres';
       const available = await checkDbStatus(savedDbType);
       if (available) {
@@ -316,6 +318,8 @@ export default function Login() {
   }
 
   return (
+    <>
+    <ColdStartBanner />
     <div className='login-shell'>
       <div className='login-card'>
         {loading && (
@@ -334,7 +338,7 @@ export default function Login() {
             <div className='brand-text'>
               <p className='eyebrow'>AI DB Explorer</p>
               <h1>Connect your database</h1>
-              <p className='subtitle'>{data?.message}</p>
+              {/* <p className='subtitle'>{data?.message}</p> */}
             </div>
           </div>
           <div className={`status-pill ${dbStatus}`}>
@@ -508,5 +512,6 @@ export default function Login() {
         )}
       </div>
     </div>
+    </>
   );
 }

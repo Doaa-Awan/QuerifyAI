@@ -364,11 +364,27 @@ p {
   order: -1;
 }
 
+.btn-schema-toggle {
+  display: none;
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  margin-left: auto;
+  line-height: 1;
+}
+
 .rate-limit-badge {
   font-size: 0.78rem;
   color: var(--text-muted, #8b9cad);
-  background: var(--surface-2, rgba(255,255,255,0.06));
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   border-radius: 999px;
   padding: 0.25rem 0.65rem;
   white-space: nowrap;
@@ -377,14 +393,14 @@ p {
 
 .rate-limit-badge--warn {
   color: #e6a817;
-  border-color: rgba(230,168,23,0.3);
-  background: rgba(230,168,23,0.08);
+  border-color: rgba(230, 168, 23, 0.3);
+  background: rgba(230, 168, 23, 0.08);
 }
 
 .rate-limit-badge--danger {
   color: #e05c5c;
-  border-color: rgba(224,92,92,0.3);
-  background: rgba(224,92,92,0.08);
+  border-color: rgba(224, 92, 92, 0.3);
+  background: rgba(224, 92, 92, 0.08);
 }
 
 .btn.danger {
@@ -480,8 +496,6 @@ p {
   background: #4ade80;
   flex-shrink: 0;
 }
-
-
 
 .db-explorer-body {
   position: relative;
@@ -672,7 +686,9 @@ p {
   display: flex;
   align-items: center;
   opacity: 0.7;
-  transition: opacity 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    color 0.15s;
 }
 
 .copy-sql-btn:hover {
@@ -1084,25 +1100,75 @@ p {
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+  }
+
+  .db-sidebar.open {
+    transform: translateY(0);
   }
 
   .db-main {
-    padding-bottom: 60px;
+    padding-bottom: 0;
   }
 
   .dialect-control {
     right: 1rem;
   }
+
+  .btn-schema-toggle {
+    display: inline-flex;
+  }
+
+  .sidebar-close-btn {
+    display: block;
+  }
 }
 
 @media (max-width: 480px) {
+  .chat-input {
+    padding: 15px;
+    margin: 0 5% 0;
+  }
+  .chat-input textarea {
+    font-size: smaller;
+  }
+
+  .chat-input button {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+  }
+
+  .chat-hint {
+    font-size: 0.75rem;
+    position: relative;
+    top: 30px;
+  }
+
+  .chat-message {
+    font-size: smaller;
+  }
+
+  .chat-messages {
+    padding: 5% 5% 15px;
+  }
+
+  .btn-nav {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
   .db-explorer-shell {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+    padding-top: 8rem;
+    min-height: 100svh;
   }
 
   .db-explorer-nav {
     gap: 0.35rem;
+    margin-top: 40px;
   }
 
   .btn-nav.btn-back {
@@ -1114,6 +1180,14 @@ p {
     max-height: 55vh;
   }
 
+  .rate-limit-badge {
+    display: none;
+  }
+
+  .sidebar-close-btn {
+    margin-left: 0;
+  }
+
   .sidebar-inner {
     padding: 1rem 0.75rem;
   }
@@ -1122,7 +1196,69 @@ p {
     padding: 0.45rem 0.55rem;
   }
 
+  .column-list {
+    position: relative;
+    left: 20px;
+    width: calc(100% - 20px);
+  }
+
   .table-name {
     font-size: 0.8rem;
   }
+}
+
+/* ── Cold Start Banner ───────────────────────────────────────────────────── */
+.cold-start-banner {
+  padding: 0.5rem 1rem;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+.cold-start-banner--error {
+  border-color: #c0392b;
+  color: #e74c3c;
+}
+
+/* ── Rate Limit Banner ───────────────────────────────────────────────────── */
+.rate-limit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+.rate-limit-banner--info {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--ink);
+}
+.rate-limit-banner__dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+.rate-limit-banner--warning {
+  background: color-mix(in srgb, #f39c12 15%, transparent);
+  border: 1px solid color-mix(in srgb, #f39c12 40%, transparent);
+  color: #f39c12;
+}
+.rate-limit-banner--blocked {
+  background: color-mix(in srgb, #c0392b 15%, transparent);
+  border: 1px solid color-mix(in srgb, #c0392b 40%, transparent);
+  color: #e74c3c;
+}
+.rate-limit-banner--blocked a {
+  color: inherit;
+  text-decoration: underline;
 }

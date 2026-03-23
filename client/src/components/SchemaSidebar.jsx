@@ -5,7 +5,7 @@ function columnTooltipKey(tableName, columnName) {
   return `${tableName}\0${columnName}`;
 }
 
-export default function SchemaSidebar({ tables = [], highlightedTables = new Set() }) {
+export default function SchemaSidebar({ tables = [], highlightedTables = new Set(), isOpen = false, onClose }) {
   const [expandedTables, setExpandedTables] = useState({});
   const [columnTooltip, setColumnTooltip] = useState(null);
   const [tooltipPinned, setTooltipPinned] = useState(false);
@@ -72,7 +72,7 @@ export default function SchemaSidebar({ tables = [], highlightedTables = new Set
   }, [tooltipPinned]);
 
   return (
-    <aside className="db-sidebar" aria-label="Schema tables">
+    <aside className={`db-sidebar${isOpen ? ' open' : ''}`} aria-label="Schema tables">
       <div className="sidebar-inner">
         <div className="sidebar-header">
           <HiOutlineTableCells className="sidebar-icon" aria-hidden />
@@ -80,6 +80,11 @@ export default function SchemaSidebar({ tables = [], highlightedTables = new Set
           <span className="sidebar-count" aria-label={`${tables.length} tables`}>
             {tables.length}
           </span>
+          {onClose && (
+            <button className="sidebar-close-btn" type="button" onClick={onClose} aria-label="Close schema sidebar">
+              ✕
+            </button>
+          )}
         </div>
         <div className="table-list">
           {tables.length === 0 ? (

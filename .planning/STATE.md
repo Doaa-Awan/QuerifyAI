@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-22T23:34:48.746Z"
+stopped_at: Completed 02-deployment-and-demo-ux/02-02-PLAN.md
+last_updated: "2026-03-23T00:17:32.758Z"
 last_activity: 2026-03-10 — Plan 01-01 complete (POST /api/query + FIFO cache)
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 1
+  total_plans: 3
+  completed_plans: 3
 ---
 
 ---
@@ -74,7 +74,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 1 of 2 (Query API and Memory Safety)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-10 — Plan 01-01 complete (POST /api/query + FIFO cache)
+Last activity: 2026-03-23 - Completed quick task 1: fix auto-connect to demo DB on load/refresh
 
 Progress: [█████░░░░░] 50%
 
@@ -99,6 +99,8 @@ Progress: [█████░░░░░] 50%
 | Phase 01-query-api-and-memory-safety P02 | 2 min | 2 tasks | 5 files |
 | Phase 04-ensure-table-schema-files-populated-and-cleared P01 | 15 | 3 tasks | 3 files |
 | Phase 04-ensure-table-schema-files-populated-and-cleared P02 | 5 | 2 tasks | 2 files |
+| Phase 02-deployment-and-demo-ux P01 | 2 | 2 tasks | 8 files |
+| Phase 02-deployment-and-demo-ux P02 | 8 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -119,6 +121,11 @@ Recent decisions affecting current work:
 - [Phase 04-ensure-table-schema-files-populated-and-cleared]: table-metadata.json was already untracked; db-explorer-context.md was the only file needing git rm --cached
 - [Phase 04-ensure-table-schema-files-populated-and-cleared]: writeExplorerSnapshot outer try/catch swallows all errors non-fatally; inner catch for generateTableDescriptions preserved
 - [Phase 04-ensure-table-schema-files-populated-and-cleared]: writeExplorerSnapshot added to named exports for direct testability (one-word change to export line)
+- [Phase 02-deployment-and-demo-ux]: sameSite set to none in production/lax in dev for cross-origin Railway+Vercel session cookies
+- [Phase 02-deployment-and-demo-ux]: legacyHeaders: true on rate limiters so ChatBot.jsx reads x-ratelimit-remaining
+- [Phase 02-deployment-and-demo-ux]: railway.toml rootDirectory must be configured in Railway dashboard to point to server/
+- [Phase 02-deployment-and-demo-ux]: CSS variables adapted to project token names (--surface, --line, --muted, --accent) rather than --color-* names from plan spec
+- [Phase 02-deployment-and-demo-ux]: ChatInput disabled prop applied to both textarea and submit button for complete blocked-state input prevention
 
 ### Roadmap Evolution
 
@@ -129,6 +136,12 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | fix auto-connect to demo DB on load/refresh | 2026-03-23 | c79294f | [1-fix-auto-connect-to-demo-db-on-load-refr](./quick/1-fix-auto-connect-to-demo-db-on-load-refr/) |
+
 ### Blockers/Concerns
 
 - [Phase 3]: Railway health check probe path and `RAILWAY_HEALTHCHECK_TIMEOUT_SEC` validity — verify against current Railway docs before implementation
@@ -137,6 +150,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T23:34:48.740Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-deployment-and-demo-ux/02-CONTEXT.md
+Last session: 2026-03-23T00:17:27.658Z
+Stopped at: Completed 02-deployment-and-demo-ux/02-02-PLAN.md
+Resume file: None

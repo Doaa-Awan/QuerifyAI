@@ -3,10 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import TypingIndicator from './TypingIndicator';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
+import { API_BASE } from '../../api.js';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
-
-const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) => {
+const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate, isBlocked = false }) => {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -44,9 +43,9 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) =
         dialect,
       });
       const { sql, explanation, tablesUsed } = response.data;
-      const rlRemaining = response.headers['ratelimit-remaining'];
-      const rlLimit = response.headers['ratelimit-limit'];
-      const rlReset = response.headers['ratelimit-reset'];
+      const rlRemaining = response.headers['x-ratelimit-remaining'];
+      const rlLimit = response.headers['x-ratelimit-limit'];
+      const rlReset = response.headers['x-ratelimit-reset'];
       if (rlRemaining != null && rlLimit != null) {
         const info = { remaining: Number(rlRemaining), limit: Number(rlLimit), reset: rlReset ? Number(rlReset) : null };
         localStorage.setItem('querify_ratelimit', JSON.stringify(info));
@@ -62,9 +61,9 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) =
     } catch (err) {
       console.error('Error submitting prompt:', err);
       if (err.response?.status === 429) {
-        const rlRemaining = err.response.headers['ratelimit-remaining'];
-        const rlLimit = err.response.headers['ratelimit-limit'];
-        const rlReset = err.response.headers['ratelimit-reset'];
+        const rlRemaining = err.response.headers['x-ratelimit-remaining'];
+        const rlLimit = err.response.headers['x-ratelimit-limit'];
+        const rlReset = err.response.headers['x-ratelimit-reset'];
         if (rlRemaining != null && rlLimit != null) {
           const info = { remaining: Number(rlRemaining), limit: Number(rlLimit), reset: rlReset ? Number(rlReset) : null };
           localStorage.setItem('querify_ratelimit', JSON.stringify(info));
@@ -94,7 +93,7 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) =
           <ChatMessages messages={messages} error={error} />
           {isBotTyping && <TypingIndicator />}
         </div>
-        <ChatInput onSubmit={onSubmit} />
+        <ChatInput onSubmit={onSubmit} disabled={isBlocked} />
       </div>
     </div>
   );

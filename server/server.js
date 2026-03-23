@@ -4,7 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import session from 'express-session';
 import router from './routes.js';
-import { clearExplorerSnapshotFile } from './services/postgres.service.js';
 
 //.env config
 dotenv.config();
@@ -17,9 +16,15 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 const corsOptions = {
   origin: allowedOrigins,
   credentials: true, // required for cookies/sessions to be sent cross-origin
+  exposedHeaders: [
+    'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset',
+    'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset',
+  ],
 };
 
 const app = express();
+
+app.set('trust proxy', 1); // required for req.secure to be accurate behind Railway/Vercel proxy
 
 app.use(helmet()); // security headers: X-Content-Type-Options, X-Frame-Options, CSP, etc.
 app.use(express.json());
@@ -33,7 +38,7 @@ app.use(
     cookie: {
       httpOnly: true, // prevent JS access to the cookie
       secure: process.env.NODE_ENV === 'production', // HTTPS-only in production
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // none required for cross-origin cookies in production
       maxAge: 8 * 60 * 60 * 1000, // 8 hours
     },
   })
