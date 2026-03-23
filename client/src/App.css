@@ -1163,6 +1163,7 @@ p {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
     padding-top: 8rem;
+    min-height: 100svh;
   }
 
   .db-explorer-nav {
