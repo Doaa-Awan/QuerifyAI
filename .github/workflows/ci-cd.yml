@@ -175,6 +175,7 @@ jobs:
         run: |
           npx --yes @railway/cli@latest up \
             --service "${{ secrets.RAILWAY_SERVICE_NAME }}" \
+            --project "${{ secrets.RAILWAY_PROJECT_ID }}" \
             --detach
 
   # ─────────────────────────────────────────────────────────
