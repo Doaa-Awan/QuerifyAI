@@ -1,7 +1,7 @@
 import { FaArrowUp } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 
-const ChatInput = ({ onSubmit }) => {
+const ChatInput = ({ onSubmit, disabled = false }) => {
   const { register, handleSubmit, reset, formState } = useForm();
 
   //function returned from calling handleSubmit from react-hook-form
@@ -32,9 +32,10 @@ const ChatInput = ({ onSubmit }) => {
         placeholder='Ask something like “Show total revenue by month” or “List top 10 customers.”'
         aria-label='Ask a question about your database'
         maxLength={1000}
+        disabled={disabled}
       />
       <button
-        disabled={!formState.isValid}
+        disabled={!formState.isValid || disabled}
         className='btn primary'
         type='submit'
       >

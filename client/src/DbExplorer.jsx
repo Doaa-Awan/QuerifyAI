@@ -4,6 +4,7 @@ const DIALECT_LABEL = { postgres: 'PostgreSQL', sqlserver: 'SQL Server' };
 import ChatBot from './components/chat/ChatBot';
 import SchemaSidebar from './components/SchemaSidebar';
 import SchemaVisualizer from './components/SchemaVisualizer';
+import RateLimitBanner from './components/RateLimitBanner.jsx';
 import { HiOutlineCircleStack } from 'react-icons/hi2';
 
 function RateLimitBadge({ remaining, limit, reset }) {
@@ -30,6 +31,7 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
       return saved ? JSON.parse(saved) : { remaining: null, limit: null, reset: null };
     } catch { return { remaining: null, limit: null, reset: null }; }
   });
+  const isBlocked = rateLimitInfo.remaining != null && rateLimitInfo.remaining <= 0;
   const [hasMessages, setHasMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -111,7 +113,8 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
 
       <div className="db-explorer-body">
         <section className="db-main">
-          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} onRateLimitUpdate={setRateLimitInfo} />
+          <RateLimitBanner remaining={rateLimitInfo.remaining} />
+          <ChatBot onTablesUsed={handleTablesUsed} onFirstMessage={() => setHasMessages(true)} dialect={dialect} onRateLimitUpdate={setRateLimitInfo} isBlocked={isBlocked} />
         </section>
 
         <SchemaSidebar tables={tables} highlightedTables={highlightedTables} />

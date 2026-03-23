@@ -5,7 +5,7 @@ import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import { API_BASE } from '../../api.js';
 
-const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) => {
+const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate, isBlocked = false }) => {
   const [messages, setMessages] = useState(() => {
     try {
       const saved = localStorage.getItem('querify_messages');
@@ -93,7 +93,7 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate }) =
           <ChatMessages messages={messages} error={error} />
           {isBotTyping && <TypingIndicator />}
         </div>
-        <ChatInput onSubmit={onSubmit} />
+        <ChatInput onSubmit={onSubmit} disabled={isBlocked} />
       </div>
     </div>
   );
