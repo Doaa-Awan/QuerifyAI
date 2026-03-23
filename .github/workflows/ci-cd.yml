@@ -16,6 +16,8 @@ jobs:
   test:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    env:
+      OPENROUTER_API_KEY: dummy-key-for-ci
     strategy:
       fail-fast: true
       matrix:
