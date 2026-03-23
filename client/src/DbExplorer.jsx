@@ -102,7 +102,7 @@ export default function DbExplorer({ tables = [], onBack, onExit, dialect = 'pos
           aria-label="Toggle schema sidebar"
         >
           <HiOutlineTableCells aria-hidden />
-          <span>Schema</span>
+          <span>Tables</span>
         </button>
         <RateLimitBadge remaining={rateLimitInfo.remaining} limit={rateLimitInfo.limit} reset={rateLimitInfo.reset} />
       </nav>

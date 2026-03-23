@@ -383,8 +383,8 @@ p {
 .rate-limit-badge {
   font-size: 0.78rem;
   color: var(--text-muted, #8b9cad);
-  background: var(--surface-2, rgba(255,255,255,0.06));
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   border-radius: 999px;
   padding: 0.25rem 0.65rem;
   white-space: nowrap;
@@ -393,14 +393,14 @@ p {
 
 .rate-limit-badge--warn {
   color: #e6a817;
-  border-color: rgba(230,168,23,0.3);
-  background: rgba(230,168,23,0.08);
+  border-color: rgba(230, 168, 23, 0.3);
+  background: rgba(230, 168, 23, 0.08);
 }
 
 .rate-limit-badge--danger {
   color: #e05c5c;
-  border-color: rgba(224,92,92,0.3);
-  background: rgba(224,92,92,0.08);
+  border-color: rgba(224, 92, 92, 0.3);
+  background: rgba(224, 92, 92, 0.08);
 }
 
 .btn.danger {
@@ -496,8 +496,6 @@ p {
   background: #4ade80;
   flex-shrink: 0;
 }
-
-
 
 .db-explorer-body {
   position: relative;
@@ -688,7 +686,9 @@ p {
   display: flex;
   align-items: center;
   opacity: 0.7;
-  transition: opacity 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    color 0.15s;
 }
 
 .copy-sql-btn:hover {
@@ -1126,13 +1126,48 @@ p {
 }
 
 @media (max-width: 480px) {
+  .chat-input {
+    padding: 15px;
+    margin: 0 5% 0;
+  }
+  .chat-input textarea {
+    font-size: smaller;
+  }
+
+  .chat-input button {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+  }
+
+  .chat-hint {
+    font-size: 0.75rem;
+    position: relative;
+    top: 30px;
+  }
+
+  .chat-message {
+    font-size: smaller;
+  }
+
+  .chat-messages {
+    padding: 5% 5% 15px;
+  }
+
+  .btn-nav {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
   .db-explorer-shell {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+    padding-top: 8rem;
   }
 
   .db-explorer-nav {
     gap: 0.35rem;
+    margin-top: 40px;
   }
 
   .btn-nav.btn-back {
@@ -1144,12 +1179,26 @@ p {
     max-height: 55vh;
   }
 
+  .rate-limit-badge {
+    display: none;
+  }
+
+  .sidebar-close-btn {
+    margin-left: 0;
+  }
+
   .sidebar-inner {
     padding: 1rem 0.75rem;
   }
 
   .table-row {
     padding: 0.45rem 0.55rem;
+  }
+
+  .column-list {
+    position: relative;
+    left: 20px;
+    width: calc(100% - 20px);
   }
 
   .table-name {

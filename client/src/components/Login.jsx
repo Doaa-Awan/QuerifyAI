@@ -338,7 +338,7 @@ export default function Login() {
             <div className='brand-text'>
               <p className='eyebrow'>AI DB Explorer</p>
               <h1>Connect your database</h1>
-              <p className='subtitle'>{data?.message}</p>
+              {/* <p className='subtitle'>{data?.message}</p> */}
             </div>
           </div>
           <div className={`status-pill ${dbStatus}`}>
