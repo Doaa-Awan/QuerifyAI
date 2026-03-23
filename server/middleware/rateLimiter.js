@@ -26,3 +26,13 @@ export const snapshotLimiter = rateLimit({
   message: 'Snapshot limit reached. Please try again after 1 hour.',
   handler: rateLimitHandler,
 });
+
+// 10 connect attempts per IP per 15 minutes (brute-force / credential stuffing guard)
+export const connectLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: true,
+  message: 'Too many connection attempts. Please wait 15 minutes.',
+  handler: rateLimitHandler,
+});

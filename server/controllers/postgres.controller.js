@@ -20,6 +20,7 @@ export const postgresController = {
   async connectDemo(req, res) {
     const result = await postgresService.connectDemo();
     if (result.ok) {
+      req.session.connected = true;
       res.json({ message: 'Connected to demo DB' });
       return;
     }
@@ -37,6 +38,7 @@ export const postgresController = {
 
     const result = await postgresService.connect(parseResult.data);
     if (result.ok) {
+      req.session.connected = true;
       res.json({ message: 'Connected' });
       return;
     }

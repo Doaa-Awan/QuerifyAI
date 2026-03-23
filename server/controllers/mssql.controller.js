@@ -20,6 +20,7 @@ export const mssqlController = {
   async connectDemo(req, res) {
     const result = await mssqlService.connectDemo();
     if (result.ok) {
+      req.session.connected = true;
       res.json({ message: 'Connected to demo SQL Server' });
       return;
     }
@@ -37,6 +38,7 @@ export const mssqlController = {
 
     const result = await mssqlService.connect(parseResult.data);
     if (result.ok) {
+      req.session.connected = true;
       res.json({ message: 'Connected to SQL Server' });
       return;
     }
