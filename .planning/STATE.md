@@ -141,7 +141,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | fix auto-connect to demo DB on load/refresh | 2026-03-23 | c79294f | [1-fix-auto-connect-to-demo-db-on-load-refr](./quick/1-fix-auto-connect-to-demo-db-on-load-refr/) |
-| 3 | fix ci-cd testing before main branch is pushed to production | 2026-03-23 | — | [3-fix-ci-cd-testing-before-main-branch-is-](./quick/3-fix-ci-cd-testing-before-main-branch-is-/) |
+| 3 | fix ci-cd testing before main branch is pushed to production | 2026-03-23 | c6b0b9f | [3-fix-ci-cd-testing-before-main-branch-is-](./quick/3-fix-ci-cd-testing-before-main-branch-is-/) |
 
 ### Blockers/Concerns
 
