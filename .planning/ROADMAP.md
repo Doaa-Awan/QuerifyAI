@@ -33,20 +33,20 @@ Plans:
 - [ ] 01-02-PLAN.md — Cap topicCache (100 entries), conversations Map (200 entries + 20 msg/conv depth), switch ChatBot.jsx to /api/query, MEM-03 audit
 
 ### Phase 2: Deployment and Demo UX
-**Goal**: Querify is live at a public URL with a Neon sample DB pre-wired and deployment-context UX that prevents user confusion
+**Goal**: Querify is live at a public URL with Supabase and Azure SQL Server demo DBs pre-wired and deployment-context UX that prevents user confusion
 **Depends on**: Phase 1
 **Requirements**: DEPL-01, DEPL-02, DEPL-03, DEPL-04, DEPL-05, DEPL-06, UX-01, UX-02, UX-03
 **Success Criteria** (what must be TRUE):
-  1. Visiting the public Vercel URL loads the app, connects to the Neon demo DB, and a user can ask a question and receive SQL — all without touching local dev
+  1. Visiting the public Vercel URL loads the app, connects to the Supabase demo DB, and a user can ask a question and receive SQL — all without touching local dev
   2. When the Railway server is cold (first visit after inactivity), the app shows "Waking up the server..." within 3 seconds and resolves silently when ready
   3. The chat interface shows a rate limit banner that reflects the user's remaining query budget and transitions to a persistent blocked state at zero
   4. Refreshing the Vercel app on any route does not return a 404
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Pre-deploy hardening — session cookie `sameSite/secure`, `VITE_API_URL` abstraction in `api.js`, `vercel.json` SPA rewrite, `railway.toml` config, `GET /health` endpoint
-- [ ] 02-02: Cold start handler component (exponential backoff health polling) and rate limit banner component (three-state: info/warning/blocked)
-- [ ] 02-03: End-to-end deployment — set all Railway and Vercel env vars, wire existing Supabase demo DB credentials, smoke test live URL
+- [ ] 02-01-PLAN.md — Pre-deploy hardening: session cookie sameSite/secure, VITE_API_URL abstraction in api.js, vercel.json SPA rewrite, railway.toml config, GET /health endpoint, legacyHeaders: true for rate limit headers
+- [ ] 02-02-PLAN.md — Cold start handler component (exponential backoff health polling) and rate limit banner component (three-state: info/warning/blocked)
+- [ ] 02-03-PLAN.md — End-to-end deployment: set all Railway and Vercel env vars, wire Supabase and Azure SQL Server demo DB credentials, smoke test live URL
 
 ## Progress
 

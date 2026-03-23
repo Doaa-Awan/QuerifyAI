@@ -9,6 +9,8 @@ import { chatLimiter, snapshotLimiter } from './middleware/rateLimiter.js';
 
 const router = express.Router();
 
+router.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+
 router.get('/api', (req, res) => {
   res.json({ message: 'Hello from the server!' });
 });
