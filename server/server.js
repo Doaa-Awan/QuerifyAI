@@ -4,7 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import session from 'express-session';
 import router from './routes.js';
-import { clearExplorerSnapshotFile } from './services/postgres.service.js';
 
 //.env config
 dotenv.config();
@@ -17,6 +16,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 const corsOptions = {
   origin: allowedOrigins,
   credentials: true, // required for cookies/sessions to be sent cross-origin
+  exposedHeaders: [
+    'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset',
+    'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset',
+  ],
 };
 
 const app = express();
