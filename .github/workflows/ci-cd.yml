@@ -1,0 +1,175 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ─────────────────────────────────────────────────────────
+  # JOB 1: Run server unit tests + client lint + client build
+  # ─────────────────────────────────────────────────────────
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: Server unit tests
+            dir: server
+            cmd: node --test tests/*.test.js
+          - name: Client lint
+            dir: client
+            cmd: npm run lint
+          - name: Client build
+            dir: client
+            cmd: npm run build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ matrix.dir }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.dir }}
+        run: npm ci
+
+      - name: ${{ matrix.name }}
+        working-directory: ${{ matrix.dir }}
+        run: ${{ matrix.cmd }}
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 2: Start server, verify all API endpoints respond
+  # ─────────────────────────────────────────────────────────
+  health-check:
+    name: API health checks
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Start server
+        working-directory: server
+        env:
+          PORT: 5000
+          SESSION_SECRET: ci-test-secret
+          ALLOWED_ORIGINS: http://localhost:5173
+          NODE_ENV: test
+        run: node server.js &
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:5000/health > /dev/null; then
+              echo "Server is up"; exit 0
+            fi
+            echo "Waiting... ($i/20)"; sleep 1
+          done
+          echo "Server failed to start"; exit 1
+
+      - name: GET /health returns 200 with status ok
+        run: |
+          res=$(curl -sf http://localhost:5000/health)
+          echo "$res"
+          echo "$res" | grep -q '"status":"ok"'
+
+      - name: GET /api returns 200 with message
+        run: |
+          res=$(curl -sf http://localhost:5000/api)
+          echo "$res"
+          echo "$res" | grep -q '"message"'
+
+      - name: POST /api/query with bad body returns 400
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST http://localhost:5000/api/query \
+            -H "Content-Type: application/json" \
+            -d '{"conversationId":"not-a-uuid"}')
+          echo "Status: $code"
+          [ "$code" = "400" ]
+
+      - name: POST /api/query with valid UUID passes validation
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST http://localhost:5000/api/query \
+            -H "Content-Type: application/json" \
+            -d '{"question":"How many users?","conversationId":"123e4567-e89b-12d3-a456-426614174000"}')
+          echo "Status: $code"
+          [ "$code" != "400" ]
+
+      - name: Live AI smoke test (skipped if OPENROUTER_API_KEY not set)
+        if: ${{ env.OPENROUTER_API_KEY != '' }}
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          res=$(curl -sf \
+            -X POST http://localhost:5000/api/query \
+            -H "Content-Type: application/json" \
+            -d '{"question":"How many tables exist?","conversationId":"123e4567-e89b-12d3-a456-426614174000"}')
+          echo "$res"
+          echo "$res" | grep -qE '"sql"|"error"'
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 3a: Deploy backend to Railway (main push only)
+  # ─────────────────────────────────────────────────────────
+  deploy-backend:
+    name: Deploy backend to Railway
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        working-directory: server
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          npx --yes @railway/cli@latest up \
+            --service "${{ secrets.RAILWAY_SERVICE_NAME }}" \
+            --detach
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 3b: Deploy frontend to Vercel (main push only)
+  # ─────────────────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy frontend to Vercel
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy to Vercel
+        working-directory: client
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npx --yes vercel --prod --token $VERCEL_TOKEN --yes
