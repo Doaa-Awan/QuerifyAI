@@ -157,30 +157,9 @@ jobs:
           echo "$res" | grep -qE '"sql"|"error"'
 
   # ─────────────────────────────────────────────────────────
-  # JOB 3a: Deploy backend to Railway (main push only)
-  # ─────────────────────────────────────────────────────────
-  deploy-backend:
-    name: Deploy backend to Railway
-    runs-on: ubuntu-latest
-    needs: health-check
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Railway
-        working-directory: server
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          npx --yes @railway/cli@latest up \
-            --service "${{ secrets.RAILWAY_SERVICE_NAME }}" \
-            --project "${{ secrets.RAILWAY_PROJECT_ID }}" \
-            --environment production \
-            --detach
-
-  # ─────────────────────────────────────────────────────────
-  # JOB 3b: Deploy frontend to Vercel (main push only)
+  # JOB 3: Deploy frontend to Vercel (main push only)
+  # Backend (Railway) deploys automatically via GitHub integration
+  # when all CI checks pass — no CLI step needed.
   # ─────────────────────────────────────────────────────────
   deploy-frontend:
     name: Deploy frontend to Vercel
