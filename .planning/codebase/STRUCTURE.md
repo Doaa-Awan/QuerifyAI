@@ -12,31 +12,41 @@ ai-db-explorer-2026/
 │   │   ├── assets/             # Bundled static assets
 │   │   ├── components/
 │   │   │   ├── chat/           # Chat UI components
-│   │   │   │   ├── ChatBot.jsx         # Chat state + API calls
+│   │   │   │   ├── ChatBot.jsx         # Chat state + API calls to /api/query
 │   │   │   │   ├── ChatInput.jsx       # Message input form
 │   │   │   │   ├── ChatMessages.jsx    # Message list + CopyPre renderer
 │   │   │   │   ├── TypingIndicator.tsx # Bot typing animation
 │   │   │   │   └── ssmsTheme.js        # Custom SQL syntax highlight theme
-│   │   │   ├── ui/             # (Empty — reserved for shared UI primitives)
-│   │   │   └── ERDModal.jsx    # Entity relationship diagram modal
-│   │   ├── App.jsx             # Root component: login screen + DB connect
+│   │   │   └── ui/             # (Reserved for shared UI primitives)
+│   │   ├── App.jsx             # Root component: routes between Login and DbExplorer
 │   │   ├── App.css             # All application styles (dark theme, CSS variables)
-│   │   ├── DbExplorer.jsx      # Explorer layout: sidebar + chat + ERD
+│   │   ├── Login.jsx           # DB connection form (PostgreSQL + SQL Server tabs, demo buttons)
+│   │   ├── DbExplorer.jsx      # Explorer layout: SchemaSidebar + chat + SchemaVisualizer
+│   │   ├── SchemaSidebar.jsx   # Collapsible table/column list with hover tooltips
+│   │   ├── SchemaVisualizer.jsx # ReactFlow ERD with layered layout + FK edges
+│   │   ├── RateLimitBanner.jsx # Context-aware info/warning/blocked rate limit banner
+│   │   ├── ColdStartBanner.jsx # Railway cold start delay notice
 │   │   ├── index.css           # CSS reset / base styles
 │   │   └── main.jsx            # React DOM entry point
 │   ├── dist/                   # Built output (committed, nginx-served in Docker)
+│   ├── Dockerfile              # Client Docker image (nginx)
+│   ├── nginx.conf              # nginx config for SPA serving
 │   ├── index.html              # Vite HTML entry
 │   ├── vite.config.js          # Vite config with /api + /db proxy to backend
 │   └── package.json
 │
 ├── server/                     # Node.js Express backend
 │   ├── controllers/
-│   │   ├── chat.controller.js      # POST /api/chat handler
-│   │   └── postgres.controller.js  # All /db/* and /api/connect handlers
+│   │   ├── chat.controller.js      # Legacy POST /api/chat SSE handler
+│   │   ├── query.controller.js     # POST /api/query — main NL→SQL endpoint
+│   │   ├── postgres.controller.js  # All /db/* PostgreSQL handlers
+│   │   └── mssql.controller.js     # All /db/*-sqlserver handlers
 │   ├── services/
 │   │   ├── chat.service.js         # Two-pass AI pipeline, topic cache
-│   │   ├── postgres.service.js     # DB connect, snapshot, PII sanitization
+│   │   ├── postgres.service.js     # PostgreSQL connect, snapshot, PII sanitization
+│   │   ├── mssql.service.js        # SQL Server connect, snapshot, introspection
 │   │   ├── introspection.js        # Structured schema introspection -> table objects
+│   │   ├── cache.js                # In-memory query result cache (question+dialect+tables key)
 │   │   └── schemaStore.js          # In-memory schema singleton
 │   ├── repositories/
 │   │   ├── postgres.repository.js  # Pool state singleton
@@ -44,18 +54,22 @@ ai-db-explorer-2026/
 │   ├── db/
 │   │   └── postgres.js             # Raw pg queries: getSchema, getTables, getSampleRows, getRowCounts
 │   ├── middleware/
-│   │   ├── rateLimiter.js          # chatLimiter + snapshotLimiter
+│   │   ├── rateLimiter.js          # chatLimiter + snapshotLimiter + connectLimiter
 │   │   └── requireSession.js       # Session auth guard
 │   ├── prompts/
 │   │   ├── chatbot.txt             # System prompt template with {{dbSchema}} placeholder
 │   │   ├── db-explorer-context.md  # Auto-generated: schema + sample rows as markdown
 │   │   └── table-metadata.json     # Auto-generated: per-table descriptions + column metadata
-│   ├── routes.js               # All Express route definitions
+│   ├── routes.js               # All Express route definitions (PostgreSQL + SQL Server)
+│   ├── Dockerfile              # Server Docker image (Node.js)
 │   ├── server.js               # Express app setup + listen
 │   └── package.json
 │
+├── .github/
+│   └── workflows/              # GitHub Actions CI (auto-promotes production on main)
 ├── .planning/
 │   └── codebase/               # GSD mapping documents
+├── docker-compose.yml          # Multi-service Docker Compose (client + server)
 ├── package.json                # Root package (no deps; workspace scripts only)
 ├── QUERIFY_SPEC.md             # Product spec / design reference
 └── README.md
@@ -121,10 +135,14 @@ ai-db-explorer-2026/
 
 **Core Logic:**
 - `server/services/chat.service.js`: Two-pass AI pipeline — the most complex file in the codebase
-- `server/services/postgres.service.js`: DB connection, PII sanitization, snapshot generation
-- `server/routes.js`: All API route definitions
-- `client/src/App.jsx`: DB connection form, connect flow, schema fetch
+- `server/services/postgres.service.js`: PostgreSQL connection, PII sanitization, snapshot generation
+- `server/services/mssql.service.js`: SQL Server connection, introspection, snapshot generation
+- `server/controllers/query.controller.js`: Main `/api/query` handler with cache + chatService delegation
+- `server/services/cache.js`: In-memory query result cache
+- `server/routes.js`: All API route definitions (PostgreSQL + SQL Server)
+- `client/src/Login.jsx`: DB connection form (PostgreSQL + SQL Server tabs)
 - `client/src/DbExplorer.jsx`: Explorer layout shell
+- `client/src/SchemaVisualizer.jsx`: ReactFlow ERD diagram
 
 **Prompt Templates:**
 - `server/prompts/chatbot.txt`: System prompt; `{{dbSchema}}` replaced at runtime
@@ -200,4 +218,4 @@ ai-db-explorer-2026/
 
 ---
 
-*Structure analysis: 2026-03-09*
+*Structure analysis: 2026-03-24*
