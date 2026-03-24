@@ -1,8 +1,22 @@
 # QuerifyAI
+>Built for developers and analysts navigating databases they didn't build.
 
-Understanding an unfamiliar database without documentation is frustrating. When I joined my first job, the company's PSA database had no data model — I had to run trial-and-error SELECT queries just to figure out how the data was structured. Tickets were stored in a table called `faults`. Invoices, devices, and clients were connected through non-obvious joins that took days to piece together.
+**Problem:** 
+- Data model that exists but can't be fully trusted
+- Unfamiliar and complex databases that take a while to understand in order to figure out how to query the data that is needed
 
-Querify connects to any PostgreSQL database, introspects the schema automatically, and lets you ask questions in plain English to get accurate SQL back — without needing to know the table names, column names, or how anything relates. Built for developers navigating databases they didn't build.
+**Story:**
+- When I joined my first job, the company's PSA database had a schema diagram, but it hadn't been kept up to date.
+- Tables existed in the live database that weren't in the diagram.
+- Many tables were empty with no context about what they were for.
+- The table storing support tickets was called `faults`.
+- Invoice data was split across `InvoiceHeader` and `InvoiceDetail`, linked through joins that weren't obvious from the column names alone.
+- Even with a partial map, figuring out how the data actually connected took days of exploration.
+
+**Solution:**
+- Querify connects to any PostgreSQL or MS SQL Server database, introspects the schema automatically, and lets you ask questions in plain English to get an accurate PostgreSQL or SQL query back (without needing to know the table names, column names, or how anything relates).
+- QuerifyAI deliberately never executes queries or displays data. The AI sees the shape of your database, not the contents. Only the top 10 records from each table are read, and all the personally identifiable information is scrambled before sending any context to an LLM. That's not a limitation, it's the point.
+
 
 > **[Live Demo](#)** · **[GitHub](https://github.com/Doaa-Awan/ai-db-explorer)**
 
