@@ -67,15 +67,26 @@ const CopyPre = ({ children, node, ...props }) => {
 };
 
 function QueryMetaLine({ metadata }) {
-  const parts = [];
+  const fields = [];
   if (metadata.piiColumnsMasked?.length > 0)
-    parts.push(`\uD83D\uDD12 Sanitized: ${metadata.piiColumnsMasked.join(', ')}`);
+    fields.push({ label: '🔒 Sanitized:', value: metadata.piiColumnsMasked.join(', ') });
   if (metadata.tablesCached?.length > 0)
-    parts.push(`Tables cached: ${metadata.tablesCached.join(', ')}`);
+    fields.push({ label: 'Tables cached:', value: metadata.tablesCached.join(', ') });
   if (metadata.tokenCount)
-    parts.push(`Tokens: ${metadata.tokenCount.toLocaleString()}`);
-  if (parts.length === 0) return null;
-  return <p className="query-meta">{parts.join(' \xB7 ')}</p>;
+    fields.push({ label: 'Tokens:', value: metadata.tokenCount.toLocaleString() });
+  if (fields.length === 0) return null;
+  return (
+    <p className="query-meta">
+      {fields.map((f, i) => (
+        <React.Fragment key={f.label}>
+          {i > 0 && <span className="query-meta-sep"> · </span>}
+          <span className="query-meta-label">{f.label}</span>
+          {' '}
+          <span className="query-meta-value">{f.value}</span>
+        </React.Fragment>
+      ))}
+    </p>
+  );
 }
 
 const ChatMessages = ({ messages, error }) => {
