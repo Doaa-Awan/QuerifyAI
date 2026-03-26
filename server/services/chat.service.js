@@ -59,7 +59,7 @@ async function loadTableMetadata() {
 function isFollowUpQuery(query) {
   const lower = query.toLowerCase().trim();
   const followUpWords = [
-    'those', 'they', 'it ', 'these', 'that ', 'same',
+    'those', 'they', 'these', 'same',
     ' also', 'additionally', 'furthermore', 'what about',
   ];
   if (followUpWords.some((w) => lower.includes(w))) return true;
@@ -180,12 +180,7 @@ export const chatService = {
         const { tables: newTables, pass1Tokens: p1 } = await selectRelevantTables(prompt, tableMetadata);
         pass1Tokens = p1;
         console.log('[chat] pass 1 result:', newTables);
-        if (newTables !== null && newTables.length > 0 && cached) {
-          relevantTables = [...new Set([...cached.tables, ...newTables])];
-          console.log('[chat] merged with cached tables:', relevantTables);
-        } else {
-          relevantTables = newTables;
-        }
+        relevantTables = newTables;
       }
 
       if (relevantTables && relevantTables.length > 0) {
