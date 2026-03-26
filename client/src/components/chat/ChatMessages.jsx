@@ -1,3 +1,4 @@
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useEffect, useRef, useState } from 'react';
 import { FiCopy, FiCheck } from 'react-icons/fi';
@@ -90,15 +91,16 @@ const ChatMessages = ({ messages, error }) => {
   return (
     <div className='chat-messages' ref={containerRef}>
       {messages.map((message, index) => (
-        <div
-          key={index}
-          className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
-        >
-          <ReactMarkdown components={{ pre: CopyPre }}>{message.content}</ReactMarkdown>
+        <React.Fragment key={index}>
+          <div
+            className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
+          >
+            <ReactMarkdown components={{ pre: CopyPre }}>{message.content}</ReactMarkdown>
+          </div>
           {message.role === 'bot' && message.metadata && (
             <QueryMetaLine metadata={message.metadata} />
           )}
-        </div>
+        </React.Fragment>
       ))}
       {error && <div className="chat-message bot-message error-message">{error}</div>}
     </div>
