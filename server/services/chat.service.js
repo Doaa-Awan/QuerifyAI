@@ -99,14 +99,18 @@ Respond with ONLY a JSON array of relevant table names, e.g. ["table1", "table2"
       max_tokens: 50,
     });
 
-    const pass1Tokens = response.usage?.total_tokens ?? 0;
+    const pass1Usage = {
+      input: response.usage?.prompt_tokens ?? 0,
+      output: response.usage?.completion_tokens ?? 0,
+      total: response.usage?.total_tokens ?? 0,
+    };
     const content = response.choices?.[0]?.message?.content ?? '[]';
     const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();
     const parsed = JSON.parse(jsonStr);
-    if (!Array.isArray(parsed)) return { tables: null, pass1Tokens };
-    return { tables: parsed.filter((name) => knownTables.includes(name)), pass1Tokens };
+    if (!Array.isArray(parsed)) return { tables: null, pass1Usage };
+    return { tables: parsed.filter((name) => knownTables.includes(name)), pass1Usage };
   } catch {
-    return { tables: null, pass1Tokens: 0 };
+    return { tables: null, pass1Usage: { input: 0, output: 0, total: 0 } };
   }
 }
 
@@ -167,7 +171,7 @@ export const chatService = {
     const tableMetadata = await loadTableMetadata();
     let schemaContext = null; // null means use full schema (fallback)
 
-    let pass1Tokens = 0;
+    let pass1Usage = { input: 0, output: 0, total: 0 };
     let relevantTables = null;
 
     if (tableMetadata) {
@@ -177,8 +181,8 @@ export const chatService = {
         relevantTables = cached.tables;
         console.log('[chat] cache hit → reusing tables:', relevantTables);
       } else {
-        const { tables: newTables, pass1Tokens: p1 } = await selectRelevantTables(prompt, tableMetadata);
-        pass1Tokens = p1;
+        const { tables: newTables, pass1Usage: p1 } = await selectRelevantTables(prompt, tableMetadata);
+        pass1Usage = p1;
         console.log('[chat] pass 1 result:', newTables);
         relevantTables = newTables;
       }
@@ -230,7 +234,11 @@ export const chatService = {
       },
     });
 
-    const pass2Tokens = response.usage?.total_tokens ?? 0;
+    const pass2Usage = {
+      input: response.usage?.prompt_tokens ?? 0,
+      output: response.usage?.completion_tokens ?? 0,
+      total: response.usage?.total_tokens ?? 0,
+    };
     const rawContent = response.choices?.[0]?.message?.content ?? '';
 
     let parsed;
@@ -261,7 +269,14 @@ export const chatService = {
         }
         return [...seen];
       })(),
-      token_count: pass1Tokens + pass2Tokens,
+      tokens: {
+        pass1: pass1Usage,
+        pass2: pass2Usage,
+        input: pass1Usage.input + pass2Usage.input,
+        output: pass1Usage.output + pass2Usage.output,
+        total: pass1Usage.total + pass2Usage.total,
+      },
+      token_count: pass1Usage.total + pass2Usage.total,  // backwards compat
     };
   },
 };
