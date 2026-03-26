@@ -253,7 +253,17 @@ export const chatService = {
       explanation: parsed.explanation ?? '',
       tables_used: Array.isArray(parsed.tables_used) ? parsed.tables_used : [],
       tables_cached: relevantTables ?? [],
-      pii_columns_masked: tableMetadata?._piiColumns ?? [],
+      pii_columns_masked: (() => {
+        const allPii = tableMetadata?._piiColumns ?? [];
+        if (!allPii.length || !relevantTables?.length) return [];
+        const seen = new Set();
+        for (const tableName of relevantTables) {
+          for (const col of (tableMetadata[tableName]?.columns ?? [])) {
+            if (allPii.includes(col.column_name)) seen.add(col.column_name);
+          }
+        }
+        return [...seen];
+      })(),
       token_count: pass1Tokens + pass2Tokens,
     };
   },
