@@ -13,7 +13,7 @@ Querify's backend core and prototype UI are working. This milestone transforms i
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Query API and Memory Safety** - Expose a clean `POST /api/query` endpoint with result caching and cap all unbounded in-memory Maps (completed 2002-03-10)
-- [ ] **Phase 2: Deployment and Demo UX** - Deploy to Vercel + Railway with Neon demo DB, cold start banner, and rate limit indicator
+- [x] **Phase 2: Deployment and Demo UX** - Deploy to Vercel + Railway with Neon demo DB, cold start banner, and rate limit indicator (completed 2026-03-26)
 
 ## Phase Details
 
@@ -56,7 +56,7 @@ Phases execute in numeric order: 1 → 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Query API and Memory Safety | 2/2 | Complete   | 2002-03-10 |
-| 2. Deployment and Demo UX | 1/3 | In Progress|  |
+| 2. Deployment and Demo UX | 3/3 | Complete   | 2026-03-26 |
 
 ### Phase 3: Ensure table schema files populated and cleared
 
