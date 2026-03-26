@@ -174,6 +174,7 @@ function sanitizeSamples(schemaRows, tableSamples) {
   }, {});
 
   const sanitized = {};
+  const maskedColumns = new Set();
 
   for (const [tableName, rows] of Object.entries(tableSamples)) {
     const tableColumnMeta = columnMetaMap[tableName] || {};
@@ -184,6 +185,7 @@ function sanitizeSamples(schemaRows, tableSamples) {
       for (const [columnName, value] of Object.entries(nextRow)) {
         const columnMeta = tableColumnMeta[columnName];
         if (isLikelyPiiColumn(columnMeta, columnName, value)) {
+          maskedColumns.add(columnName);
           nextRow[columnName] = buildDummyValue(columnName, value, rowIndex);
         }
       }
@@ -192,7 +194,7 @@ function sanitizeSamples(schemaRows, tableSamples) {
     });
   }
 
-  return sanitized;
+  return { sanitized, maskedColumns: [...maskedColumns] };
 }
 
 function buildSnapshotMarkdown({ generatedAt, tables, schemaRows, tableSamples }) {
@@ -320,7 +322,7 @@ ${tableList}`;
   return descriptions;
 }
 
-async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptions }) {
+async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptions, maskedColumns = [] }) {
   const metadata = {};
   for (const tableName of tables) {
     metadata[tableName] = {
@@ -329,6 +331,7 @@ async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptio
       sampleRows: tableSamples[tableName] ?? [],
     };
   }
+  metadata._piiColumns = maskedColumns;
   await fs.writeFile(tableMetadataPath, JSON.stringify(metadata, null, 2), 'utf8');
   console.log('[snapshot] table-metadata.json written →', tableMetadataPath);
 }
@@ -343,7 +346,7 @@ async function writeExplorerSnapshot(pool) {
     rawTableSamples[tableName] = await getSampleRows(pool, tableName);
   }
 
-  const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
+  const { sanitized: tableSamples, maskedColumns } = sanitizeSamples(schemaRows, rawTableSamples);
 
   const markdown = buildSnapshotMarkdown({
     generatedAt: new Date(),
@@ -362,7 +365,7 @@ async function writeExplorerSnapshot(pool) {
   } catch (err) {
     console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
   }
-  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
+  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions, maskedColumns });
 }
 
 async function clearExplorerSnapshotFile() {

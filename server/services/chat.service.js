@@ -70,7 +70,7 @@ function isFollowUpQuery(query) {
 // Pass 1: ask the model which tables are needed for the given query.
 // Returns a validated string[] on success, or null to signal fallback.
 async function selectRelevantTables(query, tableMetadata) {
-  const knownTables = Object.keys(tableMetadata);
+  const knownTables = Object.keys(tableMetadata).filter((k) => !k.startsWith('_'));
 
   const tableList = knownTables
     .map((name) => {
@@ -97,13 +97,14 @@ Respond with ONLY a JSON array of relevant table names, e.g. ["table1", "table2"
       max_tokens: 50,
     });
 
+    const pass1Tokens = response.usage?.total_tokens ?? 0;
     const content = response.choices?.[0]?.message?.content ?? '[]';
     const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();
     const parsed = JSON.parse(jsonStr);
-    if (!Array.isArray(parsed)) return null;
-    return parsed.filter((name) => knownTables.includes(name));
+    if (!Array.isArray(parsed)) return { tables: null, pass1Tokens };
+    return { tables: parsed.filter((name) => knownTables.includes(name)), pass1Tokens };
   } catch {
-    return null;
+    return { tables: null, pass1Tokens: 0 };
   }
 }
 
@@ -164,16 +165,18 @@ export const chatService = {
     const tableMetadata = await loadTableMetadata();
     let schemaContext = null; // null means use full schema (fallback)
 
+    let pass1Tokens = 0;
+    let relevantTables = null;
+
     if (tableMetadata) {
       const cached = topicCache.get(conversationId);
       const isCacheHit = cached && isFollowUpQuery(prompt);
-
-      let relevantTables;
       if (isCacheHit) {
         relevantTables = cached.tables;
         console.log('[chat] cache hit → reusing tables:', relevantTables);
       } else {
-        const newTables = await selectRelevantTables(prompt, tableMetadata);
+        const { tables: newTables, pass1Tokens: p1 } = await selectRelevantTables(prompt, tableMetadata);
+        pass1Tokens = p1;
         console.log('[chat] pass 1 result:', newTables);
         if (newTables && cached) {
           relevantTables = [...new Set([...cached.tables, ...newTables])];
@@ -230,6 +233,7 @@ export const chatService = {
       },
     });
 
+    const pass2Tokens = response.usage?.total_tokens ?? 0;
     const rawContent = response.choices?.[0]?.message?.content ?? '';
 
     let parsed;
@@ -248,6 +252,9 @@ export const chatService = {
       sql: parsed.sql ?? null,
       explanation: parsed.explanation ?? '',
       tables_used: Array.isArray(parsed.tables_used) ? parsed.tables_used : [],
+      tables_cached: relevantTables ?? [],
+      pii_columns_masked: tableMetadata?._piiColumns ?? [],
+      token_count: pass1Tokens + pass2Tokens,
     };
   },
 };
