@@ -59,7 +59,6 @@ v1.0 shipped. The app is live on Vercel + Railway with PostgreSQL and SQL Server
 **Tech stack:** React 19, Vite 7, Node.js ES modules, Express 5, ReactFlow 11, OpenRouter (gpt-4o-mini), PostgreSQL (pg), SQL Server (mssql), Railway (backend), Vercel (frontend)
 
 **Known open items:**
-- DEPL-06: Supabase demo DB env vars need to be set in Railway dashboard
 - `apiFetch` in api.js is dead code
 - RateLimitBanner blocked state doesn't show time-until-reset (available in DbExplorer state, not forwarded)
 

@@ -16,8 +16,8 @@
 - GitHub Actions CI/CD pipeline auto-promoting to production branch on main pass
 
 ### Known Gaps
-- **DEPL-06**: Supabase demo DB env vars not confirmed set in Railway — manual dashboard action required
-- **ERD deviations**: `reactflow@11` used instead of `@xyflow/react v12`; custom layout instead of dagre; MiniMap not implemented; row count badge missing
+
+- **ERD deviations**: MiniMap not implemented; row count badge missing
 - **No VERIFICATION.md files** created during execute-phase for either formal phase
 
 ---

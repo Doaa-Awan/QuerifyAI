@@ -21,4 +21,4 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 | Phase | Milestone | Plans Complete | Status   | Completed  |
 |-------|-----------|----------------|----------|------------|
 | 1. Query API and Memory Safety | v1.0 | 2/2 | Complete | 2026-03-10 |
-| 2. Deployment and Demo UX      | v1.0 | 2/3 | Complete | 2026-03-26 |
+| 2. Deployment and Demo UX      | v1.0 | 3/3 | Complete | 2026-03-26 |

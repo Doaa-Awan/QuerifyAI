@@ -30,7 +30,6 @@ Status: Shipped 2026-03-26
 
 ## Known Open Items
 
-- DEPL-06: Supabase demo DB env vars need to be set in Railway dashboard
 - `apiFetch` in client/src/api.js is dead code
 - RateLimitBanner blocked state doesn't forward time-until-reset to user
 
