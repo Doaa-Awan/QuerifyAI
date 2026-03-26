@@ -2,7 +2,7 @@
 
 ## Overview
 
-Querify's backend core and prototype UI are working. This milestone transforms it into a demo-ready portfolio piece across two remaining phases: clean up the query API and cap unbounded in-memory structures (Phase 1, complete), then wire the full deployment stack on Vercel + Railway with production-facing UX for cold start and rate limiting (Phase 2). Each phase is independently verifiable and unblocks the next.
+Querify is deployed and demo-ready. Remaining work covers two follow-on phases: harden the snapshot file lifecycle so runtime-only files never appear in git (Phase 2), then add SQL Server connection support alongside existing PostgreSQL (Phase 3). Each phase is independently verifiable and unblocks the next.
 
 ## Phases
 
@@ -12,8 +12,9 @@ Querify's backend core and prototype UI are working. This milestone transforms i
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Query API and Memory Safety** - Expose a clean `POST /api/query` endpoint with result caching and cap all unbounded in-memory Maps (completed 2002-03-10)
-- [x] **Phase 2: Deployment and Demo UX** - Deploy to Vercel + Railway with Neon demo DB, cold start banner, and rate limit indicator (completed 2026-03-26)
+- [x] **Phase 1: Query API and Memory Safety** - Expose a clean `POST /api/query` endpoint with result caching and cap all unbounded in-memory Maps (completed 2026-03-10)
+- [ ] **Phase 2: Ensure table schema files populated and cleared** - Snapshot file lifecycle is explicit, safe, and tested
+- [ ] **Phase 3: Implement SQL Server DB Connection Option** - Add SQL Server support alongside existing PostgreSQL
 
 ## Phase Details
 
@@ -32,49 +33,33 @@ Plans:
 - [ ] 01-01-PLAN.md — Create POST /api/query endpoint, cache.js (200-entry FIFO), query controller, deprecation warn on /api/chat, zod in package.json, test stubs
 - [ ] 01-02-PLAN.md — Cap topicCache (100 entries), conversations Map (200 entries + 20 msg/conv depth), switch ChatBot.jsx to /api/query, MEM-03 audit
 
-### Phase 2: Deployment and Demo UX
-**Goal**: Querify is live at a public URL with Supabase and Azure SQL Server demo DBs pre-wired and deployment-context UX that prevents user confusion
-**Depends on**: Phase 1
-**Requirements**: DEPL-01, DEPL-02, DEPL-03, DEPL-04, DEPL-05, DEPL-06, UX-01, UX-02, UX-03
-**Success Criteria** (what must be TRUE):
-  1. Visiting the public Vercel URL loads the app, connects to the Supabase demo DB, and a user can ask a question and receive SQL — all without touching local dev
-  2. When the Railway server is cold (first visit after inactivity), the app shows "Waking up the server..." within 3 seconds and resolves silently when ready
-  3. The chat interface shows a rate limit banner that reflects the user's remaining query budget and transitions to a persistent blocked state at zero
-  4. Refreshing the Vercel app on any route does not return a 404
-**Plans**: 3 plans
+### Phase 2: Ensure table schema files populated and cleared
+
+**Goal:** Snapshot file lifecycle is explicit, safe, and tested — runtime-only files never appear in git, server startup never fails due to cleanup errors, and a DB or disk failure during snapshot generation is swallowed non-fatally
+**Requirements**: TBD
+**Depends on:** Phase 1
+**Plans:** 0 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Pre-deploy hardening: session cookie sameSite/secure, VITE_API_URL abstraction in api.js, vercel.json SPA rewrite, railway.toml config, GET /health endpoint, legacyHeaders: true for rate limit headers
-- [ ] 02-02-PLAN.md — Cold start handler component (exponential backoff health polling) and rate limit banner component (three-state: info/warning/blocked)
-- [ ] 02-03-PLAN.md — End-to-end deployment: set all Railway and Vercel env vars, wire Supabase and Azure SQL Server demo DB credentials, smoke test live URL
+- [ ] TBD (run /gsd:plan-phase 2 to break down)
+
+### Phase 3: Implement SQL Server DB Connection Option
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 2
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 3 to break down)
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2
+Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Query API and Memory Safety | 2/2 | Complete   | 2002-03-10 |
-| 2. Deployment and Demo UX | 3/3 | Complete   | 2026-03-26 |
-
-### Phase 3: Ensure table schema files populated and cleared
-
-**Goal:** Snapshot file lifecycle is explicit, safe, and tested — runtime-only files never appear in git, server startup never fails due to cleanup errors, and a DB or disk failure during snapshot generation is swallowed non-fatally
-**Requirements**: TBD
-**Depends on:** Phase 2
-**Plans:** 1/3 plans executed
-
-Plans:
-- [ ] 02-01-PLAN.md — Remove snapshot files from git index, fix startup catch to emit console.warn, wrap writeExplorerSnapshot in outer non-fatal try/catch
-- [ ] 02-02-PLAN.md — Write unit tests for clearExplorerSnapshotFile and writeExplorerSnapshot using node:test with mocked fs
-
-### Phase 4: Implement SQL Server DB Connection Option
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 3
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 4 to break down)
+| 1. Query API and Memory Safety | 2/2 | Complete   | 2026-03-10 |
+| 2. Ensure table schema files   | 0/0 | Not Started|  |
+| 3. Implement SQL Server        | 0/0 | Not Started|  |
