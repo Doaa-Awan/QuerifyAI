@@ -65,6 +65,18 @@ const CopyPre = ({ children, node, ...props }) => {
   );
 };
 
+function QueryMetaLine({ metadata }) {
+  const parts = [];
+  if (metadata.piiColumnsMasked?.length > 0)
+    parts.push(`\uD83D\uDD12 Sanitized: ${metadata.piiColumnsMasked.join(', ')}`);
+  if (metadata.tablesCached?.length > 0)
+    parts.push(`Tables cached: ${metadata.tablesCached.join(', ')}`);
+  if (metadata.tokenCount)
+    parts.push(`Tokens: ${metadata.tokenCount.toLocaleString()}`);
+  if (parts.length === 0) return null;
+  return <p className="query-meta">{parts.join(' \xB7 ')}</p>;
+}
+
 const ChatMessages = ({ messages, error }) => {
   const containerRef = useRef(null);
 
@@ -83,6 +95,9 @@ const ChatMessages = ({ messages, error }) => {
           className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
         >
           <ReactMarkdown components={{ pre: CopyPre }}>{message.content}</ReactMarkdown>
+          {message.role === 'bot' && message.metadata && (
+            <QueryMetaLine metadata={message.metadata} />
+          )}
         </div>
       ))}
       {error && <div className="chat-message bot-message error-message">{error}</div>}

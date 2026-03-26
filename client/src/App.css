@@ -631,6 +631,8 @@ p {
   overflow: hidden;
 }
 
+.query-meta { font-size: 0.75rem; color: var(--muted); margin: 0.25rem 0 0; }
+
 .error-message {
   background: rgba(224, 92, 92, 0.08);
   border-color: rgba(224, 92, 92, 0.3);
