@@ -24,15 +24,15 @@
 
 **Controllers:**
 - Purpose: Validate input with Zod, delegate to services, format HTTP responses
-- Location: `server/controllers/chat.controller.js`, `server/controllers/postgres.controller.js`
+- Location: `server/controllers/chat.controller.js` (legacy SSE), `server/controllers/query.controller.js` (main `/api/query`), `server/controllers/postgres.controller.js` (PostgreSQL DB ops), `server/controllers/mssql.controller.js` (SQL Server DB ops)
 - Contains: Zod schemas for request bodies, thin handler methods
-- Depends on: Services, schemaStore
+- Depends on: Services, schemaStore, cache
 - Used by: Routes
 
 **Services:**
 - Purpose: Application logic; AI orchestration, DB introspection, snapshot generation
-- Location: `server/services/chat.service.js`, `server/services/postgres.service.js`, `server/services/introspection.js`
-- Contains: Two-pass AI pipeline, PII sanitization, snapshot markdown generation, pool management
+- Location: `server/services/chat.service.js`, `server/services/postgres.service.js`, `server/services/mssql.service.js`, `server/services/introspection.js`, `server/services/cache.js`
+- Contains: Two-pass AI pipeline, PII sanitization, snapshot markdown generation, pool management, in-memory query result cache
 - Depends on: Repositories, db layer, OpenAI client, fs
 - Used by: Controllers
 
@@ -72,7 +72,7 @@
 **Frontend Chat:**
 - Purpose: Manage chat messages, submit prompts to API, render AI responses with SQL highlighting
 - Location: `client/src/components/chat/ChatBot.jsx`, `client/src/components/chat/ChatMessages.jsx`, `client/src/components/chat/ChatInput.jsx`
-- Contains: Message list state (localStorage-persisted), axios POST to `/api/chat`, ReactMarkdown with custom `CopyPre` renderer
+- Contains: Message list state (localStorage-persisted), axios POST to `/api/query`, ReactMarkdown with custom `CopyPre` renderer, rate limit tracking
 - Depends on: axios, react-markdown, react-syntax-highlighter
 
 ## Data Flow
@@ -91,8 +91,8 @@
 
 **Chat / SQL Generation Flow:**
 
-1. User types a question in `ChatInput.jsx`; `ChatBot.jsx` POSTs to `POST /api/chat`
-2. `chat.controller.js` validates prompt + conversationId with Zod
+1. User types a question in `ChatInput.jsx`; `ChatBot.jsx` POSTs to `POST /api/query`
+2. `query.controller.js` validates prompt + conversationId + dialect with Zod; checks in-memory cache (cache.js) — hit returns immediately
 3. `chatService.sendMessage()` begins two-pass AI pipeline:
    - **Pass 1 (table selection):** Sends table names + descriptions from `table-metadata.json` to `gpt-4o-mini`; receives JSON array of relevant table names
    - Follow-up detection via `isFollowUpQuery()` heuristic; cache hit skips pass 1
@@ -138,10 +138,10 @@
 - Files: `client/src/components/chat/ChatMessages.jsx`
 - Pattern: Wraps `<pre>` elements; detects SQL via language class or `SQL_START` regex; uses `PrismLight` with custom SSMS theme
 
-**ERD Modal:**
+**Schema Visualizer:**
 - Purpose: Visualize FK relationships between tables as an interactive diagram
-- Files: `client/src/components/ERDModal.jsx`
-- Pattern: BFS layout from most-connected table; SVG lines with orthogonal routing; pan + zoom via mouse events; no external diagram library
+- Files: `client/src/components/SchemaVisualizer.jsx`
+- Pattern: ReactFlow-based diagram with layered layout algorithm; draggable table nodes; FK edges rendered by ReactFlow; pan/zoom native to ReactFlow library
 
 ## Entry Points
 
@@ -156,13 +156,18 @@
 - Responsibilities: Mount `<App />` to `#root` in StrictMode
 
 **Primary Routes:**
-- `POST /db/connect` — connect user DB, trigger snapshot + introspection
-- `POST /db/connect-demo` — connect using server env demo credentials
+- `POST /db/connect` — connect PostgreSQL DB, trigger snapshot + introspection
+- `POST /db/connect-demo` — connect using server env PostgreSQL demo credentials
+- `POST /db/connect-sqlserver` — connect SQL Server DB
+- `POST /db/connect-demo-sqlserver` — connect using server env SQL Server demo credentials
 - `POST /api/connect` — alternate combined connect + introspect endpoint
-- `POST /api/chat` — accept NL prompt, return `{ sql, explanation, tables_used }`
-- `GET /db/schema` — return raw schema rows (used by App.jsx for sidebar)
+- `POST /api/query` — accept NL prompt, return `{ sql, explanation, tablesUsed }` (main endpoint)
+- `POST /api/chat` — legacy SSE streaming endpoint (not used by current UI)
+- `GET /db/schema` — return raw PostgreSQL schema rows
+- `GET /db/schema-sqlserver` — return raw SQL Server schema rows
 - `GET /api/schema` — return introspected schema with FK relationship list
-- `POST /db/explorer-context/snapshot` — regenerate context files
+- `POST /db/explorer-context/snapshot` — regenerate PostgreSQL context files
+- `POST /db/explorer-context/snapshot-sqlserver` — regenerate SQL Server context files
 - `POST /db/explorer-context/clear` — clear context files and schemaStore
 
 ## Error Handling
@@ -191,4 +196,4 @@
 
 ---
 
-*Architecture analysis: 2026-03-09*
+*Architecture analysis: 2026-03-24*

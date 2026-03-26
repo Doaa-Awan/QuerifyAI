@@ -32,12 +32,16 @@
 ## What It Does
 
 - **Schema introspection** — connects to any PostgreSQL database and dynamically maps all tables, columns, data types, and foreign key relationships with zero manual configuration
-- **Natural language to SQL** — ask a question in plain English, get accurate SQL back with an explanation; the query runs inline so you don't have to copy-paste it anywhere
+- **Natural language to SQL** — ask a question in plain English, get accurate SQL back with an explanation; copy it with one click or run it yourself
 - **Two-pass AI pipeline** — Pass 1 identifies which tables are relevant to your question; Pass 2 generates SQL using only those tables' full schemas. Reduces token cost, improves accuracy, and caches table selections for follow-up queries
-- **ERD visualization** — renders an interactive entity-relationship diagram using a BFS layout algorithm, with pan/zoom and draggable table cards
+- **ERD visualization** — renders an interactive entity-relationship diagram using a layered layout algorithm, with pan/zoom and draggable table cards
+- **SQL Server support** — connects to Microsoft SQL Server in addition to PostgreSQL; separate connection tabs with dedicated demo databases for each
+- **Syntax-highlighted SQL** — every AI response renders SQL with syntax highlighting and a one-click copy button
+- **Session persistence** — connection state, chat history, and conversation context survive page refresh via localStorage; auto-reconnects on load
+- **Rate limit tracking** — context-aware banner shows remaining query budget and transitions through info → warning → blocked states as limits approach
 - **Query history** — session history of all queries with one-click copy and SQL export
 - **PII safety** — masks sensitive columns (email, phone, names) in sample data before anything is sent to the AI; your data stays in your environment
-- **Read-only enforcement** — SELECT-only connections, no writes to your database
+- **Read-only enforcement** — no writes to your database; Querify generates SQL, you run it
 
 ---
 
@@ -64,9 +68,11 @@ It's not a BI tool. It doesn't return data results for you. It helps you write t
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, Vite, custom CSS (dark theme), react-hook-form, react-markdown |
+| UI | react-syntax-highlighter, Chakra UI, react-icons |
+| ERD | ReactFlow with layered layout algorithm |
 | Backend | Node.js, Express 5, Zod, express-rate-limit |
-| Database | PostgreSQL (pg driver, connection pooling) |
-| AI | claude-sonnet via OpenRouter (two-pass routing, structured JSON output) |
+| Database | PostgreSQL (pg driver), SQL Server (mssql driver) |
+| AI | gpt-4o-mini via OpenRouter (two-pass routing, structured JSON output) |
 
 ---
 
@@ -169,7 +175,7 @@ querify/
 
 ## Limitations
 
-- PostgreSQL only in v1 — SQL Server and MySQL support planned
+- MySQL not yet supported — PostgreSQL and SQL Server are both fully implemented
 - Works best for analytical and reporting questions; complex multi-step transformations may need manual SQL refinement
 - Schema introspection covers tables, columns, data types, and foreign keys — stored procedures and views are not currently indexed
 - The AI generates the query — you verify and run it. Not designed for non-technical users

@@ -1,7 +1,7 @@
 # Querify — AI Database Explorer
 ## Project Specification
 
-> Last updated: 2026-03-08 (session 2)
+> Last updated: 2026-03-24
 
 ---
 
@@ -17,11 +17,16 @@
 | Frontend localStorage persistence (session, schema, messages) | ✅ Done |
 | Two-pass AI pipeline (`chat.service.js`) — table routing + SQL generation | ✅ Done |
 | Pipeline fixes — token limit, follow-up detection, table merging | ✅ Done |
-| `POST /api/query` endpoint (dedicated, separate from `/api/chat`) | ⬜ Todo |
-| `cache.js` — query result caching | ⬜ Todo |
-| Querify frontend components (ConnectionForm, SchemaExplorer, etc.) | ⬜ Todo |
-| ERD visualization (React Flow or D3) | ⬜ Todo |
-| Rate limit banner + cold start loading state | ⬜ Todo |
+| `POST /api/query` endpoint (dedicated, separate from `/api/chat`) | ✅ Done |
+| `cache.js` — query result caching | ✅ Done |
+| Core Querify frontend components (Login, SchemaSidebar, SchemaVisualizer, RateLimitBanner, ColdStartBanner) | ✅ Done |
+| ERD visualization (ReactFlow with layered layout) | ✅ Done |
+| Rate limit banner + cold start loading state | ✅ Done |
+| SQL Server support (mssql.controller.js, mssql.service.js) | ✅ Done |
+| Schema sidebar with collapsible tables + column tooltips (SchemaSidebar.jsx) | ✅ Done |
+| Syntax-highlighted SQL code blocks with copy button (react-syntax-highlighter) | ✅ Done |
+| Demo database pre-connection buttons (PostgreSQL + SQL Server) | ✅ Done |
+| Per-session connection pooling (Map<sessionId, pool> in postgres.repository.js) | ✅ Done |
 
 ---
 
@@ -63,9 +68,10 @@ Querify is a **privacy-first database schema exploration and SQL generation tool
 |---|---|---|
 | Frontend | React, JavaScript, Vite, custom CSS (dark theme) | No Tailwind — uses CSS variables |
 | Backend | Node.js, Express 5 | ES modules throughout |
-| Database | PostgreSQL (via `pg` npm package) | |
+| Database | PostgreSQL (`pg`) + SQL Server (`mssql`) | |
 | AI | OpenRouter API (model: `gpt-4o-mini`) | Two-pass pipeline |
-| ERD Visualization | Custom SVG + BFS layout | React Flow/D3 planned for future |
+| ERD Visualization | ReactFlow (reactflow@11) with layered layout algorithm | Draggable nodes, FK edges |
+| UI Components | Chakra UI, react-syntax-highlighter, react-icons | Used in schema sidebar and chat |
 | Deployment | Frontend → Vercel, Backend → Railway, Sample DB → Neon/Supabase | |
 
 ---
@@ -178,7 +184,7 @@ passcode, token, secret, api_key, ssn, social_security, passport
 
 ### 5. Two-Pass AI Query Pipeline ✅
 
-Implemented in `server/services/chat.service.js`, served via `POST /api/chat`.
+Implemented in `server/services/chat.service.js`, served via `POST /api/query` (dedicated endpoint); `/api/chat` is the legacy endpoint, still active.
 
 **Pass 1 — Table Selection:**
 ```
@@ -220,8 +226,8 @@ Fallback: if Pass 1 returns null/empty, injects full db-explorer-context.md inst
 - `server/prompts/table-metadata.json` — Pass 1 source: table names, AI descriptions, columns, sample rows
 - `server/prompts/db-explorer-context.md` — full schema fallback for Pass 2
 
-### 6. ERD Visualization — partial (custom SVG, React Flow/D3 planned)
-- Renders interactive node-based diagram from live schema data
+### 6. ERD Visualization ✅
+- Implemented using ReactFlow (reactflow@11) with a layered layout algorithm. Nodes are draggable. Foreign key relationships render as connecting edges.
 - Each table is a node showing column names and data types
 - Foreign key relationships rendered as connecting edges
 - Zoomable, pannable, draggable
@@ -229,7 +235,7 @@ Fallback: if Pass 1 returns null/empty, injects full db-explorer-context.md inst
 
 ### 7. Rate-Limited API Proxy ✅
 - All OpenRouter calls go through the Express backend — API key never exposed to frontend
-- Rate limiting: 20 AI requests per IP per day on the live demo instance
+- Rate limiting: 20 AI requests per IP per day (`chatLimiter`), 5 snapshot generations per hour (`snapshotLimiter`), 10 connection attempts per 15 minutes (`connectLimiter`)
 - Frontend displays visible banner: "Demo limited to 20 queries/day — clone repo to connect your own database"
 
 ### 8. Session Persistence ✅
@@ -241,6 +247,23 @@ Frontend localStorage keys — all cleared on Back/Exit:
 | `querify_schema` | JSON `TableSchema[]` | Sidebar + ERD on refresh without re-fetch |
 | `querify_messages` | JSON `Message[]` | Chat history survives refresh |
 | `querify_conversation_id` | UUID string | AI conversation context survives refresh |
+
+### 9. SQL Server Support ✅
+- Full SQL Server connection support via `mssql` npm package
+- Dedicated controllers and services: `mssql.controller.js`, `mssql.service.js`
+- Login.jsx includes SQL Server connection tab alongside PostgreSQL tab
+- Demo pre-connection buttons available for both PostgreSQL and SQL Server sample databases
+
+### 10. Schema Sidebar ✅
+- Collapsible table list rendered by `SchemaSidebar.jsx`
+- Displays AI-generated table descriptions
+- Column tooltips showing data types and PK/FK flags
+- Populated from `GET /api/schema` response on connect
+
+### 11. Syntax-Highlighted SQL + Copy Button ✅
+- SQL code blocks in chat use `react-syntax-highlighter` for color-coded output
+- Copy-to-clipboard button on each SQL block (via `CopyPre` in `ChatMessages.jsx`)
+- No external icon library dependency for the copy button
 
 ---
 
@@ -254,12 +277,21 @@ POST /api/connect                         ✅ implemented
 GET /api/schema                           ✅ implemented
   Returns: { tables: TableSchema[], relationships: Relationship[] }
 
-POST /api/query                           ⬜ todo (currently /api/chat exists)
-  Body: { question: string, history: Message[] }
+POST /api/query                           ✅ implemented (dedicated endpoint; /api/chat is legacy)
+  Body: { question: string, conversationId: string, dialect: "postgres" | "mssql" }
   Returns: { sql: string, explanation: string, tablesUsed: string[] }
 
 GET /api/health                           ✅ (as GET /api)
   Returns: { message: string }
+
+--- SQL Server endpoints ---
+POST /api/mssql/connect                   ✅ implemented
+  Body: { host, user, database, password, [port, encrypt, trustServerCertificate] }
+  Returns: { tables: TableSchema[], descriptions: Record<string, string> }
+
+POST /api/mssql/query                     ✅ implemented
+  Body: { question: string, conversationId: string }
+  Returns: { sql: string, explanation: string, tablesUsed: string[] }
 
 --- Legacy endpoints (still active) ---
 POST /db/connect                          ✅ (simple connect, no introspection)
@@ -289,16 +321,18 @@ POST /db/explorer-context/clear           ✅
 server/
 ├── controllers/
 │   ├── chat.controller.js           # POST /api/chat (legacy)
-│   └── postgres.controller.js       # All DB + introspection endpoints
+│   ├── postgres.controller.js       # All DB + introspection endpoints
+│   ├── query.controller.js          # POST /api/query (dedicated, dialect-aware)
+│   └── mssql.controller.js          # POST /api/mssql/connect + /api/mssql/query
 ├── services/
 │   ├── introspection.js             # ✅ Schema introspection engine
 │   ├── schemaStore.js               # ✅ In-memory schema persistence
 │   ├── postgres.service.js          # Connection, snapshot, connectAndIntrospect
 │   ├── chat.service.js              # ✅ Two-pass AI pipeline (POST /api/chat)
-│   ├── aiPipeline.js                # ⬜ TODO: dedicated pipeline for POST /api/query
-│   └── cache.js                     # ⬜ TODO: query result caching
+│   ├── mssql.service.js             # SQL Server connection, introspection, query pipeline
+│   └── cache.js                     # ✅ In-memory query result caching (FIFO, keyed by question+dialect+tables)
 ├── repositories/
-│   ├── postgres.repository.js       # pg.Pool singleton
+│   ├── postgres.repository.js       # Per-session pool Map (Map<sessionId, pool>)
 │   └── conversation.repository.js   # In-memory message history
 ├── middleware/
 │   ├── rateLimiter.js               # chatLimiter, snapshotLimiter, connectLimiter
@@ -315,28 +349,25 @@ server/
 
 ```
 client/src/
-├── App.jsx                          # Login form + DB connect, localStorage session management
+├── Login.jsx                        # DB connection form — PostgreSQL + SQL Server tabs, demo pre-connect buttons
 ├── DbExplorer.jsx                   # Main layout shell, sidebar, ERD trigger
 ├── main.jsx
 ├── components/
-│   ├── ERDModal.jsx                 # Interactive ERD (custom SVG/BFS layout)
+│   ├── SchemaSidebar.jsx            # Collapsible schema sidebar with column tooltips
+│   ├── SchemaVisualizer.jsx         # ReactFlow ERD with layered layout (replaces ERDModal.jsx)
+│   ├── RateLimitBanner.jsx          # Demo rate limit warning banner
+│   ├── ColdStartBanner.jsx          # Railway cold start loading state
 │   └── chat/
 │       ├── ChatBot.jsx              # Conversation state, localStorage persistence
 │       ├── ChatInput.jsx
-│       ├── ChatMessages.jsx
+│       ├── ChatMessages.jsx         # SQL code blocks with react-syntax-highlighter + CopyPre copy button
 │       └── TypingIndicator.tsx
 ├── App.css
 └── index.css
 
---- Querify target components (TODO) ---
+--- Components still TODO ---
 ├── components/
-│   ├── ConnectionForm.jsx           # DB connection string input
-│   ├── SchemaExplorer.jsx           # Table list with AI descriptions
-│   ├── ERDVisualization.jsx         # React Flow / D3 based (replaces ERDModal)
-│   ├── QueryInterface.jsx           # Natural language input + SQL output
-│   ├── SQLDisplay.jsx               # Formatted SQL with copy button
-│   ├── RateLimitBanner.jsx          # Demo usage warning
-│   └── LoadingSpinner.jsx           # Railway cold start handling
+│   └── QueryInterface.jsx           # Natural language input + SQL output
 ├── hooks/
 │   ├── useSchema.js                 # Schema state management
 │   └── useQuery.js                  # Query history + API calls
@@ -399,7 +430,7 @@ The demo should show three things in under 2 minutes:
 
 ## Known Limitations
 
-1. **PostgreSQL only** in v1 — SQL Server and MySQL support planned
+1. **MySQL not yet supported** — PostgreSQL and SQL Server are both fully implemented
 2. **Schema understanding only** — does not query and return live data results
 3. **Not for non-technical users** — generated SQL must be verified before running
 4. **Demo rate limited** to 20 queries/day per IP

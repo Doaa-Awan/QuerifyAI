@@ -44,8 +44,9 @@
 **Critical (Server):**
 - `openai` 6.16.0 - OpenAI SDK used to call OpenRouter API (`server/services/chat.service.js`, `server/services/postgres.service.js`)
 - `pg` 8.16.3 - PostgreSQL client (`server/repositories/postgres.repository.js`, `server/db/postgres.js`)
+- `mssql` 11.0.1 - SQL Server client (`server/services/mssql.service.js`, `server/controllers/mssql.controller.js`)
 - `express-session` 1.19.0 - Session management for DB connection state (`server/server.js`)
-- `zod` 4.3.6 (root) - Schema validation for request bodies (`server/controllers/chat.controller.js`, `server/controllers/postgres.controller.js`)
+- `zod` 4.3.6 (root) - Schema validation for request bodies (all controllers)
 
 **Security (Server):**
 - `helmet` 8.1.0 - HTTP security headers middleware (`server/server.js`)
@@ -56,6 +57,8 @@
 - `react-markdown` 10.1.0 - Renders AI explanation text as Markdown (`client/src/components/chat/ChatMessages.jsx`)
 - `react-syntax-highlighter` 16.1.1 - SSMS-style SQL syntax highlighting in chat responses
 - `react-icons` 5.5.0 - Icon set (HeroIcons hi2 subset used in `client/src/DbExplorer.jsx`)
+- `reactflow` 11.11.4 - Interactive ERD visualization with layered layout (`client/src/components/SchemaVisualizer.jsx`)
+- `@chakra-ui/react` 3.34.0 - UI component library for modals and theme support
 - `axios` 1.13.4 - HTTP client for API calls from frontend
 
 **Infrastructure (Server):**
@@ -92,11 +95,12 @@
 - Vite proxy bridges client → server in dev (no CORS issues locally)
 
 **Production:**
-- No Docker files found in repository
+- Docker files present: `server/Dockerfile`, `client/Dockerfile`, `client/nginx.conf`, `docker-compose.yml`
+- Railway integration for cloud deployment; CI pipeline auto-promotes production branch on main
 - Single-instance Node.js process (pool state is in-memory, not shared across processes)
 - `NODE_ENV=production` enables secure cookies (HTTPS-only)
 - Static client assets built with `npm run build` in `client/`
 
 ---
 
-*Stack analysis: 2026-03-09*
+*Stack analysis: 2026-03-24*

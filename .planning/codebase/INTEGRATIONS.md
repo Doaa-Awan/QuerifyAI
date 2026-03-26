@@ -16,12 +16,17 @@
 ## Data Storage
 
 **Databases:**
-- PostgreSQL (user-supplied) — The primary purpose of the app; users connect their own PostgreSQL instance
-  - Connection: credentials submitted by user via `POST /api/connect` or `POST /db/connect` request body (host, port, user, password, database, ssl, options)
+- PostgreSQL (user-supplied) — Users connect their own PostgreSQL instance
+  - Connection: credentials submitted via `POST /db/connect` request body (host, port, user, password, database, ssl, options)
   - Demo DB: optional server-configured PostgreSQL instance via `DEMO_DB_HOST`, `DEMO_DB_PORT`, `DEMO_DB_USER`, `DEMO_DB_PASSWORD`, `DEMO_DB_NAME`, `DEMO_DB_SSL`, `DEMO_DB_OPTIONS` env vars
   - Client: `pg` npm package (v8.16.3) using `Pool` for connection management
   - Pool managed in: `server/repositories/postgres.repository.js` (single in-memory pool per server process)
   - SSL: optional, configured per-connection via `ssl` field; uses `{ rejectUnauthorized: false }` when enabled
+- SQL Server (user-supplied) — Fully implemented alongside PostgreSQL
+  - Connection: credentials submitted via `POST /db/connect-sqlserver` request body
+  - Demo DB: optional server-configured SQL Server instance via `DEMO_MSSQL_*` env vars
+  - Client: `mssql` npm package (v11.0.1)
+  - Handled by: `server/controllers/mssql.controller.js`, `server/services/mssql.service.js`
 
 **File Storage:**
 - Local filesystem — Schema snapshots and table metadata written to `server/prompts/` at runtime
@@ -57,10 +62,10 @@
 ## CI/CD & Deployment
 
 **Hosting:**
-- Not configured — No deployment target files found (no Dockerfile, no docker-compose.yml, no Railway/Render/Heroku config)
+- Docker — `server/Dockerfile`, `client/Dockerfile`, `docker-compose.yml`; client served by nginx; Railway integration for production deployment
 
 **CI Pipeline:**
-- None — No `.github/workflows/`, no CircleCI, no other CI config found
+- GitHub Actions — `.github/workflows/`; auto-promotes production branch when CI passes on main
 
 ## Environment Configuration
 
@@ -89,15 +94,21 @@
 
 **REST endpoints exposed by server:**
 - `GET  /api` — Health ping
-- `POST /api/chat` — Chat with AI (rate-limited: 20/day per IP)
+- `POST /api/query` — Main NL→SQL endpoint (rate-limited: 20/day per IP); returns `{ sql, explanation, tablesUsed }`
+- `POST /api/chat` — Legacy SSE streaming endpoint (not used by current UI)
 - `POST /api/connect` — Connect DB + run introspection + AI descriptions (combined flow)
 - `GET  /api/schema` — Return introspected schema from in-memory store
-- `POST /db/connect` — Connect DB only (no introspection)
-- `POST /db/connect-demo` — Connect to server-configured demo DB
-- `GET  /db/status` — Check pool availability
-- `GET  /health/db` — Run `SELECT NOW()` liveness check
-- `GET  /db/schema` — Raw schema rows from `information_schema`
-- `POST /db/explorer-context/snapshot` — Build schema snapshot + AI descriptions (rate-limited: 5/hr per IP)
+- `POST /db/connect` — Connect PostgreSQL DB
+- `POST /db/connect-demo` — Connect to server-configured PostgreSQL demo DB
+- `POST /db/connect-sqlserver` — Connect SQL Server DB
+- `POST /db/connect-demo-sqlserver` — Connect to server-configured SQL Server demo DB
+- `GET  /db/status` — Check PostgreSQL pool availability
+- `GET  /db/status-sqlserver` — Check SQL Server connection availability
+- `GET  /health/db` — Run liveness check
+- `GET  /db/schema` — Raw PostgreSQL schema rows from `information_schema`
+- `GET  /db/schema-sqlserver` — Raw SQL Server schema rows
+- `POST /db/explorer-context/snapshot` — Build PostgreSQL schema snapshot + AI descriptions (rate-limited: 5/hr per IP)
+- `POST /db/explorer-context/snapshot-sqlserver` — Build SQL Server schema snapshot
 - `POST /db/explorer-context/clear` — Delete snapshot files + clear in-memory store
 
 **Dev proxy (Vite):**
@@ -105,4 +116,4 @@
 
 ---
 
-*Integration audit: 2026-03-09*
+*Integration audit: 2026-03-24*

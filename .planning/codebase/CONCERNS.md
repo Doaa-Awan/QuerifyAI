@@ -174,14 +174,10 @@
 
 ## Missing Critical Features
 
-**No `executeQuery` endpoint despite memory notes referencing it:**
-- Problem: Memory notes reference `POST /db/execute`, `ResultsTable.jsx`, `QueryChart.jsx`, `QueryHistory.jsx`, and `SqlEditor.jsx` as implemented features. None of these files exist in the repository and the route is absent from `server/routes.js`.
-- Blocks: "Run Query" button referenced in planning cannot function; these components are described as complete but are missing from the codebase.
-
 **`requireSession` middleware is never applied:**
 - Problem: The session guard exists but protects nothing (see Security Considerations above). All endpoints are effectively public.
 - Blocks: Any attempt to restrict the app to authenticated users.
 
 ---
 
-*Concerns audit: 2026-03-09*
+*Concerns audit: 2026-03-24*
