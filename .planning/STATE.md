@@ -145,6 +145,7 @@ None yet.
 | 5 | update QUERIFY_SPEC.md to reflect all implemented features | 2026-03-24 | 172f18f | [5-update-querify-spec-md-to-reflect-all-im](./quick/5-update-querify-spec-md-to-reflect-all-im/) |
 | 6 | add per-response metadata line (tables cached, PII masked, token count) | 2026-03-26 | 30e3ae1 | [6-add-information-for-user-about-tables-ca](./quick/6-add-information-for-user-about-tables-ca/) |
 | 7 | fix LLM table selection to recognize faults as tickets | 2026-03-26 | c32623f | [7-fix-llm-table-selection-to-recognize-fau](./quick/7-fix-llm-table-selection-to-recognize-fau/) |
+| 8 | add Jest tests for chat accuracy and token metrics | 2026-03-26 | 88ca850 | [8-add-jest-tests-for-chat-accuracy-and-met](./quick/8-add-jest-tests-for-chat-accuracy-and-met/) |
 
 ### Blockers/Concerns
 
@@ -154,6 +155,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-26T18:40:42Z
-Stopped at: Completed quick task 6: add per-response metadata line (tables cached, PII masked, token count)
+Last session: 2026-03-26T20:05:00Z
+Stopped at: Completed quick task 8: add Jest tests for chat accuracy and token metrics
 Resume file: None
