@@ -74,7 +74,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 1 of 2 (Query API and Memory Safety)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-03-26 - Completed quick task 6: query metadata indicator (tables cached, PII masked, token count)
+Last activity: 2026-03-26 - Completed quick task 7: fix LLM table selection to recognize faults as tickets
 
 Progress: [█████░░░░░] 50%
 
@@ -144,6 +144,7 @@ None yet.
 | 3 | fix ci-cd testing before main branch is pushed to production | 2026-03-23 | c6b0b9f | [3-fix-ci-cd-testing-before-main-branch-is-](./quick/3-fix-ci-cd-testing-before-main-branch-is-/) |
 | 5 | update QUERIFY_SPEC.md to reflect all implemented features | 2026-03-24 | 172f18f | [5-update-querify-spec-md-to-reflect-all-im](./quick/5-update-querify-spec-md-to-reflect-all-im/) |
 | 6 | add per-response metadata line (tables cached, PII masked, token count) | 2026-03-26 | 30e3ae1 | [6-add-information-for-user-about-tables-ca](./quick/6-add-information-for-user-about-tables-ca/) |
+| 7 | fix LLM table selection to recognize faults as tickets | 2026-03-26 | c32623f | [7-fix-llm-table-selection-to-recognize-fau](./quick/7-fix-llm-table-selection-to-recognize-fau/) |
 
 ### Blockers/Concerns
 
