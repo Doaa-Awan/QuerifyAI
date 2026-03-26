@@ -63,7 +63,6 @@ function isFollowUpQuery(query) {
     ' also', 'additionally', 'furthermore', 'what about',
   ];
   if (followUpWords.some((w) => lower.includes(w))) return true;
-  if (lower.split(/\s+/).length <= 3) return true;
   return false;
 }
 
@@ -76,11 +75,14 @@ async function selectRelevantTables(query, tableMetadata) {
     .map((name) => {
       const { description, columns } = tableMetadata[name];
       const colNames = columns.map((c) => c.column_name).join(', ');
-      return `- ${name}: ${description || `columns: ${colNames}`}`;
+      const descPart = description || 'No description.';
+      return `- ${name}: ${descPart} Columns: ${colNames}`;
     })
     .join('\n');
 
   const prompt = `You are a database query router. Given a user query, return a JSON array of table names needed to answer it.
+
+Note: User queries may use everyday business terms (e.g. "tickets", "invoices", "customers") that differ from internal table names. Use the table descriptions and column names to find semantically matching tables.
 
 Tables:
 ${tableList}
@@ -178,7 +180,7 @@ export const chatService = {
         const { tables: newTables, pass1Tokens: p1 } = await selectRelevantTables(prompt, tableMetadata);
         pass1Tokens = p1;
         console.log('[chat] pass 1 result:', newTables);
-        if (newTables && cached) {
+        if (newTables !== null && newTables.length > 0 && cached) {
           relevantTables = [...new Set([...cached.tables, ...newTables])];
           console.log('[chat] merged with cached tables:', relevantTables);
         } else {

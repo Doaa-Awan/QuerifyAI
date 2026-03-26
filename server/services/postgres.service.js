@@ -300,7 +300,7 @@ async function generateTableDescriptions(tables, schemaRows) {
     })
     .join('\n');
 
-  const prompt = `For each database table below, write one concise sentence describing what it stores. Respond with ONLY a JSON object mapping table names to descriptions, e.g. {"table1": "Stores ...", "table2": "Tracks ..."}.
+  const prompt = `For each database table below, write one concise sentence describing what it stores. Where applicable, include common business synonyms users might use to refer to this data in parentheses (e.g. "Stores fault records (also referred to as tickets or issues)..."). Respond with ONLY a JSON object mapping table names to descriptions, e.g. {"table1": "Stores ...", "table2": "Tracks ..."}.
 
 Tables:
 ${tableList}`;
