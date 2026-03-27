@@ -326,7 +326,13 @@ ${tableList}`;
 
   const content = response.choices?.[0]?.message?.content ?? '{}';
   const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();
-  const descriptions = JSON.parse(jsonStr);
+  let descriptions;
+  try {
+    descriptions = JSON.parse(jsonStr);
+  } catch (parseErr) {
+    console.warn('[snapshot] failed to parse table descriptions JSON, using empty object:', parseErr.message);
+    return {};
+  }
   console.log('[snapshot] descriptions received:', descriptions);
   return descriptions;
 }
