@@ -48,6 +48,24 @@ app.use(router);
 
 const PORT = process.env.PORT || process.env.VITE_PORT || 5000;
 
+// Startup guard — warn loudly if SESSION_SECRET is weak in production
+const WEAK_SECRETS = new Set([
+  'dev-secret-change-in-production',
+  'change-me-to-a-long-random-string',
+]);
+
+if (process.env.NODE_ENV === 'production') {
+  const secret = process.env.SESSION_SECRET || '';
+  if (!secret || WEAK_SECRETS.has(secret) || secret.length < 32) {
+    console.error(
+      '\n[SECURITY WARNING] SESSION_SECRET is weak or missing in production.\n' +
+      'Session cookies can be forged. Set a strong random secret:\n' +
+      '  node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"\n' +
+      'Then set SESSION_SECRET=<that value> in your production environment.\n'
+    );
+  }
+}
+
 // (async () => {
 //   try {
 //     await clearExplorerSnapshotFile();
