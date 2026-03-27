@@ -45,7 +45,12 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
   1. Making more than 10 POST /db/connect requests within 15 minutes from the same IP returns HTTP 429 on the 11th request
   2. When `POSTGRES_SSL_REJECT_UNAUTHORIZED=false` is set, the server connects to a self-signed cert DB without error; when the env var is absent or `true`, it enforces cert validation
   3. When the server starts in production (`NODE_ENV=production`) with the default weak SESSION_SECRET, it emits a console warning (or throws) before accepting requests
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Add connectLimiter to rateLimiter.js and wire to all 5 connect routes
+- [ ] 04-02-PLAN.md — Make Postgres SSL rejectUnauthorized configurable via POSTGRES_SSL_REJECT_UNAUTHORIZED env var
+- [ ] 04-03-PLAN.md — Add weak SESSION_SECRET startup guard in server.js
 
 ### Phase 5: PII Masking Hardening and Test Coverage
 **Goal**: The PII masking layer covers all known sensitive column name patterns (including ssn, dob, and passport), handles AI parse failures gracefully, and the critical path is covered by unit and integration tests
@@ -65,5 +70,5 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 | 1. Query API and Memory Safety | v1.0 | 2/2 | Complete | 2026-03-10 |
 | 2. Deployment and Demo UX | v1.0 | 3/3 | Complete | 2026-03-26 |
 | 3. Session Flag Fix | v1.1 | 1/1 | Complete | 2026-03-27 |
-| 4. Rate Limiting and SSL Hardening | v1.1 | 0/TBD | Not started | - |
+| 4. Rate Limiting and SSL Hardening | v1.1 | 0/3 | Not started | - |
 | 5. PII Masking Hardening and Test Coverage | v1.1 | 0/TBD | Not started | - |
