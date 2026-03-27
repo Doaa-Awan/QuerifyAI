@@ -14,9 +14,9 @@ Requirements for the Security Hardening milestone.
 
 ### Security Hardening (SEC)
 
-- [ ] **SEC-01**: Connect endpoints are rate-limited (10 req / 15 min) to prevent brute-force DB credential attacks
-- [ ] **SEC-02**: SSL certificate validation is configurable via `POSTGRES_SSL_REJECT_UNAUTHORIZED` env var (secure by default, opt-out for dev)
-- [ ] **SEC-03**: Server emits a loud warning (or throws) when weak default `SESSION_SECRET` is detected in production
+- [x] **SEC-01**: Connect endpoints are rate-limited (10 req / 15 min) to prevent brute-force DB credential attacks
+- [x] **SEC-02**: SSL certificate validation is configurable via `POSTGRES_SSL_REJECT_UNAUTHORIZED` env var (secure by default, opt-out for dev)
+- [x] **SEC-03**: Server emits a loud warning (or throws) when weak default `SESSION_SECRET` is detected in production
 
 ### PII Masking (PII)
 
@@ -59,9 +59,9 @@ Requirements for the Security Hardening milestone.
 |-------------|-------|--------|
 | AUTH-01 | Phase 3 | Complete (2026-03-27) |
 | AUTH-02 | Phase 3 | Complete (2026-03-27) |
-| SEC-01 | Phase 4 | Pending |
-| SEC-02 | Phase 4 | Pending |
-| SEC-03 | Phase 4 | Pending |
+| SEC-01 | Phase 4 | Complete |
+| SEC-02 | Phase 4 | Complete |
+| SEC-03 | Phase 4 | Complete |
 | PII-01 | Phase 5 | Pending |
 | PII-02 | Phase 5 | Pending |
 | PII-03 | Phase 5 | Pending |

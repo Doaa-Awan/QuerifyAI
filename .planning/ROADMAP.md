@@ -22,7 +22,7 @@ Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Harden the app's security posture by fixing the session flag bug on connect handlers, rate-limiting connect endpoints, making SSL configurable, and closing PII masking gaps with test coverage.
 
 - [x] **Phase 3: Session Flag Fix** - Set session flag reliably on both connect handlers so downstream middleware can trust the session — completed 2026-03-27
-- [ ] **Phase 4: Rate Limiting and SSL Hardening** - Apply connect rate limiter, make SSL configurable via env, and guard against weak SESSION_SECRET in production
+- [x] **Phase 4: Rate Limiting and SSL Hardening** - Apply connect rate limiter, make SSL configurable via env, and guard against weak SESSION_SECRET in production (completed 2026-03-27)
 - [ ] **Phase 5: PII Masking Hardening and Test Coverage** - Close PII masking gaps for ssn/dob/passport columns, handle JSON parse failures, and add critical-path tests
 
 ## Phase Details
@@ -70,5 +70,5 @@ Plans:
 | 1. Query API and Memory Safety | v1.0 | 2/2 | Complete | 2026-03-10 |
 | 2. Deployment and Demo UX | v1.0 | 3/3 | Complete | 2026-03-26 |
 | 3. Session Flag Fix | v1.1 | 1/1 | Complete | 2026-03-27 |
-| 4. Rate Limiting and SSL Hardening | v1.1 | 0/3 | Not started | - |
+| 4. Rate Limiting and SSL Hardening | 3/3 | Complete   | 2026-03-27 | - |
 | 5. PII Masking Hardening and Test Coverage | v1.1 | 0/TBD | Not started | - |

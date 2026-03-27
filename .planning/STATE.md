@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Security Hardening
 status: planning
-stopped_at: Completed 03-01-PLAN.md (Phase 3 Plan 01 — Set Session Flag in All Connect Handlers)
-last_updated: "2026-03-27T13:48:50.227Z"
+stopped_at: Completed 04-03-PLAN.md (Phase 4 Plan 03 — Weak SESSION_SECRET Startup Guard)
+last_updated: "2026-03-27T14:22:44.136Z"
 last_activity: 2026-03-27 — Phase 3 Plan 01 executed; session flag set in all connect handlers
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
   percent: 40
 ---
 
@@ -49,6 +49,9 @@ Progress: [████░░░░░░] 40% (3/5 phases complete — Phase 3 
 | 3. Session Flag Fix | 1 | ~10min | ~10min |
 
 *Updated after each plan completion*
+| Phase 04-rate-limiting-and-ssl-hardening P01 | 2min | 2 tasks | 2 files |
+| Phase 04-rate-limiting-and-ssl-hardening P04-02 | 1min | 2 tasks | 2 files |
+| Phase 04-03 P03 | 5min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -60,6 +63,10 @@ Recent decisions affecting current work:
 - v1.1 scoping: AUTH-03 (requireSession enforcement) deferred — session flag must be proven reliable via Phase 3 before enforcement is wired up
 - SSL default: `rejectUnauthorized` secure by default; opt-out via `POSTGRES_SSL_REJECT_UNAUTHORIZED=false` for dev
 - Phase 3 (03-01): Session flag applied at controller layer (not service layer) so it is always tied to the HTTP response path
+- [Phase 04-rate-limiting-and-ssl-hardening]: Reused shared rateLimitHandler for connectLimiter so all rate-limit responses share the same JSON shape (error + retryAfter)
+- [Phase 04-rate-limiting-and-ssl-hardening]: rejectUnauthorized defaults to true (secure); only exact string 'false' opts out to prevent accidental SSL downgrade from typos
+- [Phase 04-03]: console.error (not throw) for weak SESSION_SECRET guard: stderr visibility without crashing a live production deployment
+- [Phase 04-03]: WEAK_SECRETS Set with both code fallback and .env.example placeholder, plus length < 32 check for belt-and-suspenders coverage
 
 ### Pending Todos
 
@@ -72,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27
-Stopped at: Completed 03-01-PLAN.md (Phase 3 Plan 01 — Set Session Flag in All Connect Handlers)
+Last session: 2026-03-27T14:22:44.131Z
+Stopped at: Completed 04-03-PLAN.md (Phase 4 Plan 03 — Weak SESSION_SECRET Startup Guard)
 Resume: `/gsd:plan-phase 4` to plan Phase 4 (requireSession enforcement)
