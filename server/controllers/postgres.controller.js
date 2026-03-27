@@ -20,10 +20,12 @@ export const postgresController = {
   async connectDemo(req, res) {
     const result = await postgresService.connectDemo();
     if (result.ok) {
+      req.session.connected = true;
       res.json({ message: 'Connected to demo DB' });
       return;
     }
 
+    req.session.connected = false;
     res.status(result.status || 500).json({
       error: result.error || 'Failed to connect to demo DB',
     });
@@ -37,10 +39,12 @@ export const postgresController = {
 
     const result = await postgresService.connect(parseResult.data);
     if (result.ok) {
+      req.session.connected = true;
       res.json({ message: 'Connected' });
       return;
     }
 
+    req.session.connected = false;
     res.status(result.status || 500).json({
       error: result.error || 'Failed to connect with provided credentials',
     });
@@ -117,6 +121,7 @@ export const postgresController = {
       return;
     }
 
+    req.session.connected = false;
     res.status(result.status || 500).json({
       error: result.error || 'Failed to connect',
     });
