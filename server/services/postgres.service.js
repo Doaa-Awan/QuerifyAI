@@ -161,6 +161,10 @@ function buildDummyValue(columnName, value, rowIndex) {
     return `redacted_${n}`;
   }
 
+  if (name.includes('ssn') || name.includes('social_security')) return '***-**-****';
+  if (name.includes('dob') || name.includes('birth')) return '1900-01-01';
+  if (name.includes('passport')) return 'redacted';
+
   if (typeof value === 'string') return `redacted_${n}`;
   if (typeof value === 'number') return n;
   if (typeof value === 'bigint') return BigInt(n);
