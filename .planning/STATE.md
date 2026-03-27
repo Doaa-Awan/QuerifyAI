@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Security Hardening
 status: planning
-stopped_at: Completed 04-03-PLAN.md (Phase 4 Plan 03 — Weak SESSION_SECRET Startup Guard)
-last_updated: "2026-03-27T14:22:44.136Z"
+stopped_at: Completed 05-01-PLAN.md (Phase 5 Plan 01 — PII Masking Gap Fixes)
+last_updated: "2026-03-27T19:18:59.805Z"
 last_activity: 2026-03-27 — Phase 3 Plan 01 executed; session flag set in all connect handlers
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
   percent: 40
 ---
 
@@ -52,6 +52,7 @@ Progress: [████░░░░░░] 40% (3/5 phases complete — Phase 3 
 | Phase 04-rate-limiting-and-ssl-hardening P01 | 2min | 2 tasks | 2 files |
 | Phase 04-rate-limiting-and-ssl-hardening P04-02 | 1min | 2 tasks | 2 files |
 | Phase 04-03 P03 | 5min | 1 tasks | 1 files |
+| Phase 05-pii-masking-hardening-and-test-coverage P01 | 3min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 04-rate-limiting-and-ssl-hardening]: rejectUnauthorized defaults to true (secure); only exact string 'false' opts out to prevent accidental SSL downgrade from typos
 - [Phase 04-03]: console.error (not throw) for weak SESSION_SECRET guard: stderr visibility without crashing a live production deployment
 - [Phase 04-03]: WEAK_SECRETS Set with both code fallback and .env.example placeholder, plus length < 32 check for belt-and-suspenders coverage
+- [Phase 05-01]: PII name check moved before isDateType guard so dob/birth_date date columns are always masked regardless of storage type
+- [Phase 05-01]: SSN dummy value is '***-**-****', dob is '1900-01-01', passport is 'redacted' — specific branches precede generic type fallbacks in buildDummyValue
+- [Phase 05-01]: JSON.parse in generateTableDescriptions wrapped in isolated try/catch returning {} — outer try/catch in writeExplorerSnapshot continues to handle network failures
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:22:44.131Z
-Stopped at: Completed 04-03-PLAN.md (Phase 4 Plan 03 — Weak SESSION_SECRET Startup Guard)
+Last session: 2026-03-27T19:18:59.800Z
+Stopped at: Completed 05-01-PLAN.md (Phase 5 Plan 01 — PII Masking Gap Fixes)
 Resume: `/gsd:plan-phase 4` to plan Phase 4 (requireSession enforcement)

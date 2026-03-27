@@ -76,4 +76,4 @@ Plans:
 | 2. Deployment and Demo UX | v1.0 | 3/3 | Complete | 2026-03-26 |
 | 3. Session Flag Fix | v1.1 | 1/1 | Complete | 2026-03-27 |
 | 4. Rate Limiting and SSL Hardening | v1.1 | 3/3 | Complete | 2026-03-27 |
-| 5. PII Masking Hardening and Test Coverage | v1.1 | 0/3 | Not started | - |
+| 5. PII Masking Hardening and Test Coverage | 1/3 | In Progress|  | - |

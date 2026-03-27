@@ -20,10 +20,10 @@ Requirements for the Security Hardening milestone.
 
 ### PII Masking (PII)
 
-- [ ] **PII-01**: `ssn` / `social_security` columns are masked as `***-**-****` regardless of storage type (including integer/bigint)
-- [ ] **PII-02**: `dob` / `birth` columns are replaced with placeholder date `1900-01-01`
-- [ ] **PII-03**: `passport` columns are masked as `redacted`
-- [ ] **PII-04**: AI table-description JSON parse failures are caught and return `{}` instead of propagating silently
+- [x] **PII-01**: `ssn` / `social_security` columns are masked as `***-**-****` regardless of storage type (including integer/bigint)
+- [x] **PII-02**: `dob` / `birth` columns are replaced with placeholder date `1900-01-01`
+- [x] **PII-03**: `passport` columns are masked as `redacted`
+- [x] **PII-04**: AI table-description JSON parse failures are caught and return `{}` instead of propagating silently
 
 ### Test Coverage (TEST)
 
@@ -62,10 +62,10 @@ Requirements for the Security Hardening milestone.
 | SEC-01 | Phase 4 | Complete |
 | SEC-02 | Phase 4 | Complete |
 | SEC-03 | Phase 4 | Complete |
-| PII-01 | Phase 5 | Pending |
-| PII-02 | Phase 5 | Pending |
-| PII-03 | Phase 5 | Pending |
-| PII-04 | Phase 5 | Pending |
+| PII-01 | Phase 5 | Complete |
+| PII-02 | Phase 5 | Complete |
+| PII-03 | Phase 5 | Complete |
+| PII-04 | Phase 5 | Complete |
 | TEST-01 | Phase 5 | Pending |
 | TEST-02 | Phase 5 | Pending |
 | TEST-03 | Phase 5 | Pending |
