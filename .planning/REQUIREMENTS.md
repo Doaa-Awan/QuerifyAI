@@ -27,9 +27,9 @@ Requirements for the Security Hardening milestone.
 
 ### Test Coverage (TEST)
 
-- [ ] **TEST-01**: Unit tests verify all 24 PII name patterns are correctly detected by `isLikelyPiiColumn`
-- [ ] **TEST-02**: Unit tests verify each `buildDummyValue` branch produces safe output (including `ssn` as integer)
-- [ ] **TEST-03**: Integration test verifies `sanitizeSamples` fully masks a mock schema with PII columns
+- [x] **TEST-01**: Unit tests verify all 24 PII name patterns are correctly detected by `isLikelyPiiColumn`
+- [x] **TEST-02**: Unit tests verify each `buildDummyValue` branch produces safe output (including `ssn` as integer)
+- [x] **TEST-03**: Integration test verifies `sanitizeSamples` fully masks a mock schema with PII columns
 - [x] **TEST-04**: Unit tests verify `requireSession` returns 401 without session and calls `next()` with session
 - [x] **TEST-05**: Unit tests verify `connectLimiter` returns 429 after the limit is exceeded
 
@@ -66,9 +66,9 @@ Requirements for the Security Hardening milestone.
 | PII-02 | Phase 5 | Complete |
 | PII-03 | Phase 5 | Complete |
 | PII-04 | Phase 5 | Complete |
-| TEST-01 | Phase 5 | Pending |
-| TEST-02 | Phase 5 | Pending |
-| TEST-03 | Phase 5 | Pending |
+| TEST-01 | Phase 5 | Complete |
+| TEST-02 | Phase 5 | Complete |
+| TEST-03 | Phase 5 | Complete |
 | TEST-04 | Phase 5 | Complete |
 | TEST-05 | Phase 5 | Complete |
 

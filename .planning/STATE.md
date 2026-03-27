@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Security Hardening
-status: planning
-stopped_at: Completed 05-03-PLAN.md (Phase 5 Plan 03 — Middleware Unit Tests)
-last_updated: "2026-03-27T19:22:04.140Z"
-last_activity: 2026-03-27 — Phase 3 Plan 01 executed; session flag set in all connect handlers
+status: completed
+stopped_at: Completed 05-02-PLAN.md (Phase 5 Plan 02 — PII Unit Tests)
+last_updated: "2026-03-27T19:24:28.045Z"
+last_activity: 2026-03-27 — Phase 5 Plan 03 executed; middleware unit tests for requireSession and connectLimiter
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
-  percent: 40
+  completed_plans: 7
+  percent: 86
 ---
 
 # Project State
@@ -54,6 +54,7 @@ Progress: [█████████░] 86% (6/7 plans complete)
 | Phase 04-03 P03 | 5min | 1 tasks | 1 files |
 | Phase 05-pii-masking-hardening-and-test-coverage P01 | 3min | 3 tasks | 3 files |
 | Phase 05-pii-masking-hardening-and-test-coverage P03 | 53s | 1 tasks | 1 files |
+| Phase 05-pii-masking-hardening-and-test-coverage P02 | 2min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 05-01]: JSON.parse in generateTableDescriptions wrapped in isolated try/catch returning {} — outer try/catch in writeExplorerSnapshot continues to handle network failures
 - [Phase 05-03]: Used fresh isolated rateLimit instance (not production connectLimiter) to avoid shared MemoryStore state between test runs
 - [Phase 05-03]: Used before() (not beforeEach) to share limiter across connectLimiter test cases so 10-call state carries into the 429 assertion
+- [Phase 05-02]: user_name branch ordering fixed in buildDummyValue: username/user_name check moved before generic _name branch so user_name returns user_1 not Name1
+- [Phase 05-02]: PII-04 test uses source inspection (fs.readFile) instead of dependency injection — function creates its own openai client with no injection seam
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:22:04.134Z
-Stopped at: Completed 05-03-PLAN.md (Phase 5 Plan 03 — Middleware Unit Tests)
+Last session: 2026-03-27T19:24:28.040Z
+Stopped at: Completed 05-02-PLAN.md (Phase 5 Plan 02 — PII Unit Tests)
 Resume: `/gsd:plan-phase 4` to plan Phase 4 (requireSession enforcement)
