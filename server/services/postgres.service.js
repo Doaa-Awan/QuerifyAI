@@ -24,13 +24,14 @@ function isMissingRequiredConfig(config) {
 }
 
 function createPostgresClient(config) {
+  const rejectUnauthorized = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false';
   return new Pool({
     host: config.host,
     port: config.port,
     user: config.user,
     password: config.password,
     database: config.database,
-    ssl: config.ssl ? { rejectUnauthorized: false } : false,
+    ssl: config.ssl ? { rejectUnauthorized } : false,
     ...(config.options && { options: config.options }),
   });
 }
