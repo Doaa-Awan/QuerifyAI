@@ -90,7 +90,6 @@ function isLikelyPiiColumn(columnMeta, columnName, value) {
   const name = String(columnName || '').toLowerCase();
 
   if (columnMeta?.is_primary) return false;
-  if (isDateType(columnMeta)) return false;
 
   const piiNamePatterns = [
     'name',
@@ -124,9 +123,14 @@ function isLikelyPiiColumn(columnMeta, columnName, value) {
     'api_key',
   ];
 
+  // PII name check runs BEFORE isDateType so that date-typed columns
+  // with PII names (e.g. dob, birth_date) are still masked.
   if (piiNamePatterns.some((pattern) => name.includes(pattern))) {
     return true;
   }
+
+  // Suppress non-PII-named date/time columns (created_at, updated_at, etc.)
+  if (isDateType(columnMeta)) return false;
 
   if (looksLikeEmail(value) || looksLikePhone(value)) {
     return true;
@@ -380,7 +384,7 @@ async function clearExplorerSnapshotFile() {
   }
 }
 
-export { sanitizeSamples, buildSnapshotMarkdown, generateTableDescriptions, writeTableMetadata, clearExplorerSnapshotFile, writeExplorerSnapshot };
+export { sanitizeSamples, buildSnapshotMarkdown, generateTableDescriptions, writeTableMetadata, clearExplorerSnapshotFile, writeExplorerSnapshot, isLikelyPiiColumn, buildDummyValue };
 
 // Public interface
 export const postgresService = {
