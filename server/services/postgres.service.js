@@ -150,13 +150,14 @@ function buildDummyValue(columnName, value, rowIndex) {
   if (name.includes('first_name')) return `FirstName${n}`;
   if (name.includes('last_name') || name.includes('lastname')) return `LastName${n}`;
   if (name.includes('full_name') || name.includes('fullname')) return `Person ${n}`;
+  // username / user_name must be checked before the generic _name branch
+  if (name.includes('username') || name.includes('user_name')) return `user_${n}`;
   if (name === 'name' || name.endsWith('_name')) return `Name${n}`;
   if (name.includes('address') || name.includes('street')) return `${100 + n} Example St`;
   if (name.includes('city')) return `City${n}`;
   if (name.includes('state')) return `State${n}`;
   if (name.includes('zip') || name.includes('postal')) return `000${String(n).padStart(2, '0')}`;
   if (name.includes('country')) return `Country${n}`;
-  if (name.includes('username') || name.includes('user_name')) return `user_${n}`;
   if (name.includes('password') || name.includes('passcode') || name.includes('token') || name.includes('secret')) {
     return `redacted_${n}`;
   }
