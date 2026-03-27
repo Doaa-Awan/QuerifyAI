@@ -59,9 +59,14 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A schema snapshot containing `ssn`, `social_security`, `dob`, `birth_date`, and `passport` columns never sends real values to the LLM — each is replaced with its safe placeholder regardless of column storage type
   2. An AI table-description response that contains malformed JSON does not propagate an uncaught exception — the service returns an empty object and continues
-  3. The Jest test suite passes with tests covering all 24 PII name patterns, each `buildDummyValue` branch, full `sanitizeSamples` masking, `requireSession` 401/next behaviour, and `connectLimiter` 429 behaviour
-  4. `npm test` exits zero with no skipped tests for the above suites
-**Plans**: TBD
+  3. The node:test suite passes with tests covering all 24 PII name patterns, each `buildDummyValue` branch, full `sanitizeSamples` masking, `requireSession` 401/next behaviour, and `connectLimiter` 429 behaviour
+  4. `cd server && node --test tests/*.test.js` exits zero with no skipped tests for the above suites
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Fix isLikelyPiiColumn, buildDummyValue (ssn/dob/passport branches), and generateTableDescriptions JSON parse guard
+- [ ] 05-02-PLAN.md — Create pii.unit.test.js: 35+ tests for isLikelyPiiColumn (24 patterns), buildDummyValue (all branches), sanitizeSamples
+- [ ] 05-03-PLAN.md — Create middleware.unit.test.js: requireSession 401/next and connectLimiter 429 tests
 
 ## Progress
 
@@ -70,5 +75,5 @@ Plans:
 | 1. Query API and Memory Safety | v1.0 | 2/2 | Complete | 2026-03-10 |
 | 2. Deployment and Demo UX | v1.0 | 3/3 | Complete | 2026-03-26 |
 | 3. Session Flag Fix | v1.1 | 1/1 | Complete | 2026-03-27 |
-| 4. Rate Limiting and SSL Hardening | 3/3 | Complete   | 2026-03-27 | - |
-| 5. PII Masking Hardening and Test Coverage | v1.1 | 0/TBD | Not started | - |
+| 4. Rate Limiting and SSL Hardening | v1.1 | 3/3 | Complete | 2026-03-27 |
+| 5. PII Masking Hardening and Test Coverage | v1.1 | 0/3 | Not started | - |
