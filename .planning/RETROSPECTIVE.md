@@ -47,6 +47,47 @@
 
 ---
 
+## Milestone: v1.1 — Security Hardening
+
+**Shipped:** 2026-03-30
+**Phases:** 3 (phases 3–5) | **Plans:** 7 | **Duration:** ~13 days (2026-03-14 → 2026-03-27)
+
+### What Was Built
+- Session flag set on all 5 connect handlers (Postgres + MSSQL) — infrastructure for future auth enforcement
+- `connectLimiter` middleware (10 req / 15 min) on all 5 connect routes
+- SSL `rejectUnauthorized` opt-out via env var; weak `SESSION_SECRET` production guard
+- PII masking hardened: SSN, DOB, passport gaps closed; JSON parse failure guard added
+- 91 new unit + integration tests covering all critical PII and middleware paths; full suite 135/135
+
+### What Worked
+- **Nyquist validation on every phase** — all 3 phases got VALIDATION.md with `nyquist_compliant: true`; the formal test coverage contract kept the work honest
+- **Short focused plans** — avg ~2 min per plan execution; Plans 03-01, 04-01/02/03, 05-01/02/03 each had exactly the right scope; no plan needed a second pass
+- **Auto-TDD approach for Plan 05-01** — exporting `isLikelyPiiColumn` and `buildDummyValue` as named exports to support Plan 05-02 was decided up-front in the PLAN.md, saving a rework cycle
+- **Isolated rateLimit instance in tests** — avoiding shared MemoryStore state between test runs was the right call; tests are 100% deterministic
+
+### What Was Inefficient
+- **Milestone audit was stale on Nyquist** — the initial audit (2026-03-27) was run before VALIDATION.md files existed; re-audit was needed on 2026-03-29. Running `/gsd:validate-phase` before `/gsd:audit-milestone` avoids this
+- **SUMMARY frontmatter inconsistency** — SEC-01, TEST-04, TEST-05 ended up in `dependency_graph.provides` instead of `requirements-completed`; this created ambiguity in the 3-source cross-reference. Simple fix: always write `requirements-completed` in SUMMARY frontmatter
+- **Route path documentation mismatch** — actual routes (`/api/connect`, `/db/connect-sqlserver`) don't match milestone docs; discovered at re-audit. Route table in ROADMAP should be verified against routes.js during phase planning
+
+### Patterns Established
+- **PII guard order**: primary-key check → PII name check → date-type suppression → value heuristics. Never let type guards run before name-pattern checks on sensitive fields
+- **Secure-by-default env toggle**: `process.env.VAR !== 'false'` so absent/empty/typo values stay secure
+- **Startup guard pattern**: define `WEAK_SECRETS` Set, check before `app.listen`, warn loudly without throwing
+- **Test isolation for stateful middleware**: fresh instance per test file; `before()` (not `beforeEach()`) for state accumulation tests
+
+### Key Lessons
+1. **Run `/gsd:validate-phase` before `/gsd:audit-milestone`** — the audit can't check Nyquist compliance for phases that don't have VALIDATION.md yet; doing validation first saves a re-audit cycle
+2. **`requirements-completed` in SUMMARY frontmatter is the source of truth** — don't rely on `dependency_graph.provides`; the 3-source cross-reference breaks when frontmatter is stale
+3. **Document route paths in ROADMAP phase details** — discrepancies between planned and actual paths are invisible until integration audit; verify `routes.js` during phase planning
+
+### Cost Observations
+- Model mix: 100% sonnet (claude-sonnet-4-6)
+- Sessions: 3 (Phase 3 + Phase 4 + Phase 5 each in their own session)
+- Notable: Plan execution was consistently 1–5 min; Nyquist auditor was fast due to all tests already passing
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -54,14 +95,18 @@
 | Milestone | Phases | Quick Tasks | Key Change |
 |-----------|--------|-------------|------------|
 | v1.0 | 2 formal | 8 | First GSD milestone; established quick task pattern for fixes |
+| v1.1 | 3 formal | 0 | First milestone with Nyquist validation on all phases; no quick tasks needed |
 
 ### Cumulative Quality
 
 | Milestone | Tests | Notes |
 |-----------|-------|-------|
 | v1.0 | 24 unit + 5 Jest integration | Node:test unit suite + Jest live integration tests |
+| v1.1 | 135 total (91 new) | All phase-critical paths covered; 100% pass rate |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Run `milestone complete` before `cleanup` to preserve accurate phase/plan counts in the archive
 2. Update REQUIREMENTS.md checkboxes at implementation time — don't leave for audit
+3. Run `/gsd:validate-phase` before `/gsd:audit-milestone` — Nyquist status in the audit is stale if VALIDATION.md doesn't exist yet
+4. Always write `requirements-completed` in SUMMARY frontmatter — the 3-source cross-reference breaks on `dependency_graph.provides` alone

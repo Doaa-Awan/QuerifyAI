@@ -38,10 +38,21 @@ The two-pass AI pipeline that turns a plain English question into accurate SQL u
 - ✓ GitHub Actions CI/CD — test + lint on PR, auto-promote production branch on main pass — v1.0
 - ✓ Per-response metadata line — tables cached, PII columns masked, token count — v1.0
 - ✓ Jest integration tests for chat accuracy and token metrics — v1.0
+- ✓ Session flag (`req.session.connected`) set reliably on all connect handlers (Postgres + MSSQL) — v1.1
+- ✓ `connectLimiter` (10 req / 15 min) applied to all 5 connect routes — v1.1
+- ✓ SSL `rejectUnauthorized` configurable via env var, secure-by-default — v1.1
+- ✓ Weak `SESSION_SECRET` startup guard (stderr warning in production) — v1.1
+- ✓ PII masking hardened: SSN, DOB, passport columns masked regardless of storage type — v1.1
+- ✓ JSON parse failure handling in `generateTableDescriptions` (returns `{}`) — v1.1
+- ✓ 91 unit + integration tests: all PII patterns, `buildDummyValue` branches, `sanitizeSamples`, `requireSession`, `connectLimiter` — v1.1
 
 ### Active
 
-*(none — planning next milestone)*
+<!-- v1.2 — to be defined with /gsd:new-milestone -->
+
+- [ ] AUTH-03: `requireSession` middleware wired to `/api/chat`, `/api/query`, `/db/schema`, and snapshot endpoints
+- [ ] OBS-01: Rate limit banner shows time-until-reset to the user
+- [ ] OBS-02: Dead code (`apiFetch` in `client/src/api.js`) removed
 
 ### Out of Scope
 
@@ -54,13 +65,14 @@ The two-pass AI pipeline that turns a plain English question into accurate SQL u
 
 ## Context
 
-v1.0 shipped. The app is live on Vercel + Railway with PostgreSQL and SQL Server support. 17 days of development, 76 files changed, ~9,600 lines of JS/JSX. The AI pipeline, ERD, deployment stack, and demo UX are all production-ready.
+v1.1 shipped. Security posture hardened: connect endpoints rate-limited, SSL configurable, SESSION_SECRET guard added, PII masking layer closed for SSN/DOB/passport, 91 new tests. Server LOC: ~3,650 JS. Full test suite: 135 tests passing.
 
 **Tech stack:** React 19, Vite 7, Node.js ES modules, Express 5, ReactFlow 11, OpenRouter (gpt-4o-mini), PostgreSQL (pg), SQL Server (mssql), Railway (backend), Vercel (frontend)
 
 **Known open items:**
-- `apiFetch` in api.js is dead code
-- RateLimitBanner blocked state doesn't show time-until-reset (available in DbExplorer state, not forwarded)
+- `requireSession` middleware implemented and tested (AUTH-03) but not yet wired to production routes — deferred to v1.2
+- `apiFetch` in `client/src/api.js` is dead code (OBS-02, deferred)
+- `RateLimitBanner` blocked state doesn't forward time-until-reset (OBS-01, deferred)
 
 ## Constraints
 
@@ -85,6 +97,12 @@ v1.0 shipped. The app is live on Vercel + Railway with PostgreSQL and SQL Server
 | `legacyHeaders: true` on rate limiters | ChatBot.jsx reads `x-ratelimit-remaining` (legacy format) | ✓ Good — works end-to-end |
 | SQL Server added via quick task (not formal phase) | Low-risk connection pattern mirrors PostgreSQL; no need for full phase overhead | ✓ Good — ships with v1.0 |
 | MEM-03 as audit comment (not runtime check) | Only 2 Maps in server, both capped; postgres.repository.js uses single object | ✓ Acceptable — documented |
+| Session flag at controller layer (not service) | Flag always tied to HTTP response path, regardless of service internals | ✓ Good — v1.1 |
+| `rejectUnauthorized` defaults to `true`; opt-out via exact string `'false'` | Prevents accidental SSL downgrade from typos or missing env var | ✓ Good — v1.1 |
+| `console.error` (not `throw`) for weak SESSION_SECRET guard | Stderr visibility without crashing live production deployment | ✓ Good — v1.1 |
+| PII name check before `isDateType` guard in `isLikelyPiiColumn` | PII-named date columns (dob, birth_date) must be masked regardless of storage type | ✓ Good — v1.1 |
+| Isolated `rateLimit` instance in connectLimiter tests | Avoids shared MemoryStore state between tests and production middleware | ✓ Good — v1.1 |
+| `before()` (not `beforeEach`) for connectLimiter test state | 10-call state must carry into 429 assertion; reset between cases would break the test | ✓ Good — v1.1 |
 
 ---
-*Last updated: 2026-03-26 after v1.0 milestone*
+*Last updated: 2026-03-30 after v1.1 milestone completion*
