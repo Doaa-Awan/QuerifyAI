@@ -1,80 +1,44 @@
 # Roadmap: Querify — AI Database Explorer
 
-## Overview
+## Milestones
 
-Querify's backend core and prototype UI are working. This milestone transforms it into a demo-ready portfolio piece across two remaining phases: clean up the query API and cap unbounded in-memory structures (Phase 1, complete), then wire the full deployment stack on Vercel + Railway with production-facing UX for cold start and rate limiting (Phase 2). Each phase is independently verifiable and unblocks the next.
+- ✅ **v1.0 Portfolio MVP** — Phases 1-2 (shipped 2026-03-26)
+- ✅ **v1.1 Security Hardening** — Phases 3-5 (shipped 2026-03-30)
+- 📋 **v1.2** — Phases 6+ (planned)
 
 ## Phases
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+<details>
+<summary>✅ v1.0 Portfolio MVP — SHIPPED 2026-03-26</summary>
 
-Decimal phases appear between their surrounding integers in numeric order.
+- [x] Phase 1: Query API and Memory Safety (2/2 plans) — completed 2026-03-10
+- [x] Phase 2: Deployment and Demo UX (2/3 formal plans + 8 quick tasks) — completed 2026-03-26
 
-- [x] **Phase 1: Query API and Memory Safety** - Expose a clean `POST /api/query` endpoint with result caching and cap all unbounded in-memory Maps (completed 2002-03-10)
-- [ ] **Phase 2: Deployment and Demo UX** - Deploy to Vercel + Railway with Neon demo DB, cold start banner, and rate limit indicator
+Full phase details: `.planning/milestones/v1.0-ROADMAP.md`
 
-## Phase Details
+</details>
 
-### Phase 1: Query API and Memory Safety
-**Goal**: Users get SQL answers through a clean, cacheable API endpoint and the backend is safe to deploy without OOM risk
-**Depends on**: Nothing (first phase)
-**Requirements**: QAPI-01, QAPI-02, QAPI-03, QAPI-04, MEM-01, MEM-02, MEM-03
-**Success Criteria** (what must be TRUE):
-  1. A caller can POST `{ question, conversationId }` to `/api/query` and receive `{ sql, explanation, tablesUsed }` as a JSON response
-  2. Asking the same question twice returns the second answer instantly (cache hit) without a new AI call
-  3. The old `/api/chat` endpoint still works but logs a deprecation warning in the server console
-  4. The server can handle 200+ distinct questions and 100+ conversation threads without memory growing unboundedly
-**Plans**: 2 plans
+<details>
+<summary>✅ v1.1 Security Hardening — SHIPPED 2026-03-30</summary>
 
-Plans:
-- [ ] 01-01-PLAN.md — Create POST /api/query endpoint, cache.js (200-entry FIFO), query controller, deprecation warn on /api/chat, zod in package.json, test stubs
-- [ ] 01-02-PLAN.md — Cap topicCache (100 entries), conversations Map (200 entries + 20 msg/conv depth), switch ChatBot.jsx to /api/query, MEM-03 audit
+- [x] Phase 3: Session Flag Fix (1/1 plan) — completed 2026-03-27
+- [x] Phase 4: Rate Limiting and SSL Hardening (3/3 plans) — completed 2026-03-27
+- [x] Phase 5: PII Masking Hardening and Test Coverage (3/3 plans) — completed 2026-03-27
 
-### Phase 2: Deployment and Demo UX
-**Goal**: Querify is live at a public URL with Supabase and Azure SQL Server demo DBs pre-wired and deployment-context UX that prevents user confusion
-**Depends on**: Phase 1
-**Requirements**: DEPL-01, DEPL-02, DEPL-03, DEPL-04, DEPL-05, DEPL-06, UX-01, UX-02, UX-03
-**Success Criteria** (what must be TRUE):
-  1. Visiting the public Vercel URL loads the app, connects to the Supabase demo DB, and a user can ask a question and receive SQL — all without touching local dev
-  2. When the Railway server is cold (first visit after inactivity), the app shows "Waking up the server..." within 3 seconds and resolves silently when ready
-  3. The chat interface shows a rate limit banner that reflects the user's remaining query budget and transitions to a persistent blocked state at zero
-  4. Refreshing the Vercel app on any route does not return a 404
-**Plans**: 3 plans
+Full phase details: `.planning/milestones/v1.1-ROADMAP.md`
 
-Plans:
-- [ ] 02-01-PLAN.md — Pre-deploy hardening: session cookie sameSite/secure, VITE_API_URL abstraction in api.js, vercel.json SPA rewrite, railway.toml config, GET /health endpoint, legacyHeaders: true for rate limit headers
-- [ ] 02-02-PLAN.md — Cold start handler component (exponential backoff health polling) and rate limit banner component (three-state: info/warning/blocked)
-- [ ] 02-03-PLAN.md — End-to-end deployment: set all Railway and Vercel env vars, wire Supabase and Azure SQL Server demo DB credentials, smoke test live URL
+</details>
+
+### 📋 v1.2 (Planned)
+
+*Next milestone — to be defined with `/gsd:new-milestone`*
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 1 → 2
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Query API and Memory Safety | 2/2 | Complete   | 2002-03-10 |
-| 2. Deployment and Demo UX | 1/3 | In Progress|  |
-
-### Phase 3: Ensure table schema files populated and cleared
-
-**Goal:** Snapshot file lifecycle is explicit, safe, and tested — runtime-only files never appear in git, server startup never fails due to cleanup errors, and a DB or disk failure during snapshot generation is swallowed non-fatally
-**Requirements**: TBD
-**Depends on:** Phase 2
-**Plans:** 1/3 plans executed
-
-Plans:
-- [ ] 02-01-PLAN.md — Remove snapshot files from git index, fix startup catch to emit console.warn, wrap writeExplorerSnapshot in outer non-fatal try/catch
-- [ ] 02-02-PLAN.md — Write unit tests for clearExplorerSnapshotFile and writeExplorerSnapshot using node:test with mocked fs
-
-### Phase 4: Implement SQL Server DB Connection Option
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 3
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 4 to break down)
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Query API and Memory Safety | v1.0 | 2/2 | Complete | 2026-03-10 |
+| 2. Deployment and Demo UX | v1.0 | 3/3 | Complete | 2026-03-26 |
+| 3. Session Flag Fix | v1.1 | 1/1 | Complete | 2026-03-27 |
+| 4. Rate Limiting and SSL Hardening | v1.1 | 3/3 | Complete | 2026-03-27 |
+| 5. PII Masking Hardening and Test Coverage | v1.1 | 3/3 | Complete | 2026-03-27 |

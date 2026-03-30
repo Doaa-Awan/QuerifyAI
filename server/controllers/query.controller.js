@@ -23,7 +23,7 @@ async function loadTableNames() {
   try {
     const content = await fs.readFile(tableMetadataPath, 'utf8');
     const metadata = JSON.parse(content);
-    return Object.keys(metadata);
+    return Object.keys(metadata).filter((k) => !k.startsWith('_'));
   } catch {
     return [];
   }
@@ -60,6 +60,9 @@ export const queryController = {
         sql: response.sql ?? null,
         explanation: response.explanation,
         tablesUsed: response.tables_used ?? [],
+        tablesCached: response.tables_cached ?? [],
+        piiColumnsMasked: response.pii_columns_masked ?? [],
+        tokenCount: response.token_count ?? 0,
       };
 
       queryCache.set(cacheKey, result);

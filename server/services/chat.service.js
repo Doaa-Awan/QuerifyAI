@@ -59,28 +59,30 @@ async function loadTableMetadata() {
 function isFollowUpQuery(query) {
   const lower = query.toLowerCase().trim();
   const followUpWords = [
-    'those', 'they', 'it ', 'these', 'that ', 'same',
-    ' also', 'additionally', 'furthermore', 'what about',
+    'those', 'they', 'these', 'same',
+    'additionally', 'furthermore', 'what about',
   ];
   if (followUpWords.some((w) => lower.includes(w))) return true;
-  if (lower.split(/\s+/).length <= 3) return true;
   return false;
 }
 
 // Pass 1: ask the model which tables are needed for the given query.
 // Returns a validated string[] on success, or null to signal fallback.
 async function selectRelevantTables(query, tableMetadata) {
-  const knownTables = Object.keys(tableMetadata);
+  const knownTables = Object.keys(tableMetadata).filter((k) => !k.startsWith('_'));
 
   const tableList = knownTables
     .map((name) => {
       const { description, columns } = tableMetadata[name];
       const colNames = columns.map((c) => c.column_name).join(', ');
-      return `- ${name}: ${description || `columns: ${colNames}`}`;
+      const descPart = description || 'No description.';
+      return `- ${name}: ${descPart} Columns: ${colNames}`;
     })
     .join('\n');
 
   const prompt = `You are a database query router. Given a user query, return a JSON array of table names needed to answer it.
+
+Note: User queries may use everyday business terms (e.g. "tickets", "invoices", "customers") that differ from internal table names. Use the table descriptions and column names to find semantically matching tables.
 
 Tables:
 ${tableList}
@@ -97,13 +99,18 @@ Respond with ONLY a JSON array of relevant table names, e.g. ["table1", "table2"
       max_tokens: 50,
     });
 
+    const pass1Usage = {
+      input: response.usage?.prompt_tokens ?? 0,
+      output: response.usage?.completion_tokens ?? 0,
+      total: response.usage?.total_tokens ?? 0,
+    };
     const content = response.choices?.[0]?.message?.content ?? '[]';
     const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();
     const parsed = JSON.parse(jsonStr);
-    if (!Array.isArray(parsed)) return null;
-    return parsed.filter((name) => knownTables.includes(name));
+    if (!Array.isArray(parsed)) return { tables: null, pass1Usage };
+    return { tables: parsed.filter((name) => knownTables.includes(name)), pass1Usage };
   } catch {
-    return null;
+    return { tables: null, pass1Usage: { input: 0, output: 0, total: 0 } };
   }
 }
 
@@ -164,23 +171,20 @@ export const chatService = {
     const tableMetadata = await loadTableMetadata();
     let schemaContext = null; // null means use full schema (fallback)
 
+    let pass1Usage = { input: 0, output: 0, total: 0 };
+    let relevantTables = null;
+
     if (tableMetadata) {
       const cached = topicCache.get(conversationId);
       const isCacheHit = cached && isFollowUpQuery(prompt);
-
-      let relevantTables;
       if (isCacheHit) {
         relevantTables = cached.tables;
         console.log('[chat] cache hit → reusing tables:', relevantTables);
       } else {
-        const newTables = await selectRelevantTables(prompt, tableMetadata);
+        const { tables: newTables, pass1Usage: p1 } = await selectRelevantTables(prompt, tableMetadata);
+        pass1Usage = p1;
         console.log('[chat] pass 1 result:', newTables);
-        if (newTables && cached) {
-          relevantTables = [...new Set([...cached.tables, ...newTables])];
-          console.log('[chat] merged with cached tables:', relevantTables);
-        } else {
-          relevantTables = newTables;
-        }
+        relevantTables = newTables;
       }
 
       if (relevantTables && relevantTables.length > 0) {
@@ -230,6 +234,11 @@ export const chatService = {
       },
     });
 
+    const pass2Usage = {
+      input: response.usage?.prompt_tokens ?? 0,
+      output: response.usage?.completion_tokens ?? 0,
+      total: response.usage?.total_tokens ?? 0,
+    };
     const rawContent = response.choices?.[0]?.message?.content ?? '';
 
     let parsed;
@@ -248,6 +257,26 @@ export const chatService = {
       sql: parsed.sql ?? null,
       explanation: parsed.explanation ?? '',
       tables_used: Array.isArray(parsed.tables_used) ? parsed.tables_used : [],
+      tables_cached: relevantTables ?? [],
+      pii_columns_masked: (() => {
+        const allPii = tableMetadata?._piiColumns ?? [];
+        if (!allPii.length || !relevantTables?.length) return [];
+        const seen = new Set();
+        for (const tableName of relevantTables) {
+          for (const col of (tableMetadata[tableName]?.columns ?? [])) {
+            if (allPii.includes(col.column_name)) seen.add(col.column_name);
+          }
+        }
+        return [...seen];
+      })(),
+      tokens: {
+        pass1: pass1Usage,
+        pass2: pass2Usage,
+        input: pass1Usage.input + pass2Usage.input,
+        output: pass1Usage.output + pass2Usage.output,
+        total: pass1Usage.total + pass2Usage.total,
+      },
+      token_count: pass1Usage.total + pass2Usage.total,  // backwards compat
     };
   },
 };

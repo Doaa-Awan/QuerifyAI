@@ -24,13 +24,14 @@ function isMissingRequiredConfig(config) {
 }
 
 function createPostgresClient(config) {
+  const rejectUnauthorized = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED !== 'false';
   return new Pool({
     host: config.host,
     port: config.port,
     user: config.user,
     password: config.password,
     database: config.database,
-    ssl: config.ssl ? { rejectUnauthorized: false } : false,
+    ssl: config.ssl ? { rejectUnauthorized } : false,
     ...(config.options && { options: config.options }),
   });
 }
@@ -89,7 +90,6 @@ function isLikelyPiiColumn(columnMeta, columnName, value) {
   const name = String(columnName || '').toLowerCase();
 
   if (columnMeta?.is_primary) return false;
-  if (isDateType(columnMeta)) return false;
 
   const piiNamePatterns = [
     'name',
@@ -123,9 +123,14 @@ function isLikelyPiiColumn(columnMeta, columnName, value) {
     'api_key',
   ];
 
+  // PII name check runs BEFORE isDateType so that date-typed columns
+  // with PII names (e.g. dob, birth_date) are still masked.
   if (piiNamePatterns.some((pattern) => name.includes(pattern))) {
     return true;
   }
+
+  // Suppress non-PII-named date/time columns (created_at, updated_at, etc.)
+  if (isDateType(columnMeta)) return false;
 
   if (looksLikeEmail(value) || looksLikePhone(value)) {
     return true;
@@ -145,16 +150,21 @@ function buildDummyValue(columnName, value, rowIndex) {
   if (name.includes('first_name')) return `FirstName${n}`;
   if (name.includes('last_name') || name.includes('lastname')) return `LastName${n}`;
   if (name.includes('full_name') || name.includes('fullname')) return `Person ${n}`;
+  // username / user_name must be checked before the generic _name branch
+  if (name.includes('username') || name.includes('user_name')) return `user_${n}`;
   if (name === 'name' || name.endsWith('_name')) return `Name${n}`;
   if (name.includes('address') || name.includes('street')) return `${100 + n} Example St`;
   if (name.includes('city')) return `City${n}`;
   if (name.includes('state')) return `State${n}`;
   if (name.includes('zip') || name.includes('postal')) return `000${String(n).padStart(2, '0')}`;
   if (name.includes('country')) return `Country${n}`;
-  if (name.includes('username') || name.includes('user_name')) return `user_${n}`;
   if (name.includes('password') || name.includes('passcode') || name.includes('token') || name.includes('secret')) {
     return `redacted_${n}`;
   }
+
+  if (name.includes('ssn') || name.includes('social_security')) return '***-**-****';
+  if (name.includes('dob') || name.includes('birth')) return '1900-01-01';
+  if (name.includes('passport')) return 'redacted';
 
   if (typeof value === 'string') return `redacted_${n}`;
   if (typeof value === 'number') return n;
@@ -174,6 +184,7 @@ function sanitizeSamples(schemaRows, tableSamples) {
   }, {});
 
   const sanitized = {};
+  const maskedColumns = new Set();
 
   for (const [tableName, rows] of Object.entries(tableSamples)) {
     const tableColumnMeta = columnMetaMap[tableName] || {};
@@ -184,6 +195,7 @@ function sanitizeSamples(schemaRows, tableSamples) {
       for (const [columnName, value] of Object.entries(nextRow)) {
         const columnMeta = tableColumnMeta[columnName];
         if (isLikelyPiiColumn(columnMeta, columnName, value)) {
+          maskedColumns.add(columnName);
           nextRow[columnName] = buildDummyValue(columnName, value, rowIndex);
         }
       }
@@ -192,7 +204,7 @@ function sanitizeSamples(schemaRows, tableSamples) {
     });
   }
 
-  return sanitized;
+  return { sanitized, maskedColumns: [...maskedColumns] };
 }
 
 function buildSnapshotMarkdown({ generatedAt, tables, schemaRows, tableSamples }) {
@@ -298,7 +310,7 @@ async function generateTableDescriptions(tables, schemaRows) {
     })
     .join('\n');
 
-  const prompt = `For each database table below, write one concise sentence describing what it stores. Respond with ONLY a JSON object mapping table names to descriptions, e.g. {"table1": "Stores ...", "table2": "Tracks ..."}.
+  const prompt = `For each database table below, write one concise sentence describing what it stores. Where applicable, include common business synonyms users might use to refer to this data in parentheses (e.g. "Stores fault records (also referred to as tickets or issues)..."). Respond with ONLY a JSON object mapping table names to descriptions, e.g. {"table1": "Stores ...", "table2": "Tracks ..."}.
 
 Tables:
 ${tableList}`;
@@ -315,12 +327,18 @@ ${tableList}`;
 
   const content = response.choices?.[0]?.message?.content ?? '{}';
   const jsonStr = content.replace(/```(?:json)?\n?|\n?```/g, '').trim();
-  const descriptions = JSON.parse(jsonStr);
+  let descriptions;
+  try {
+    descriptions = JSON.parse(jsonStr);
+  } catch (parseErr) {
+    console.warn('[snapshot] failed to parse table descriptions JSON, using empty object:', parseErr.message);
+    return {};
+  }
   console.log('[snapshot] descriptions received:', descriptions);
   return descriptions;
 }
 
-async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptions }) {
+async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptions, maskedColumns = [] }) {
   const metadata = {};
   for (const tableName of tables) {
     metadata[tableName] = {
@@ -329,6 +347,7 @@ async function writeTableMetadata({ tables, schemaRows, tableSamples, descriptio
       sampleRows: tableSamples[tableName] ?? [],
     };
   }
+  metadata._piiColumns = maskedColumns;
   await fs.writeFile(tableMetadataPath, JSON.stringify(metadata, null, 2), 'utf8');
   console.log('[snapshot] table-metadata.json written →', tableMetadataPath);
 }
@@ -343,7 +362,7 @@ async function writeExplorerSnapshot(pool) {
     rawTableSamples[tableName] = await getSampleRows(pool, tableName);
   }
 
-  const tableSamples = sanitizeSamples(schemaRows, rawTableSamples);
+  const { sanitized: tableSamples, maskedColumns } = sanitizeSamples(schemaRows, rawTableSamples);
 
   const markdown = buildSnapshotMarkdown({
     generatedAt: new Date(),
@@ -362,7 +381,7 @@ async function writeExplorerSnapshot(pool) {
   } catch (err) {
     console.warn('[snapshot] description generation failed, writing metadata without descriptions:', err.message);
   }
-  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions });
+  await writeTableMetadata({ tables, schemaRows, tableSamples, descriptions, maskedColumns });
 }
 
 async function clearExplorerSnapshotFile() {
@@ -376,7 +395,7 @@ async function clearExplorerSnapshotFile() {
   }
 }
 
-export { sanitizeSamples, buildSnapshotMarkdown, generateTableDescriptions, writeTableMetadata, clearExplorerSnapshotFile, writeExplorerSnapshot };
+export { sanitizeSamples, buildSnapshotMarkdown, generateTableDescriptions, writeTableMetadata, clearExplorerSnapshotFile, writeExplorerSnapshot, isLikelyPiiColumn, buildDummyValue };
 
 // Public interface
 export const postgresService = {

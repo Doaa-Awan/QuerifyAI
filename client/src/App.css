@@ -631,6 +631,11 @@ p {
   overflow: hidden;
 }
 
+.query-meta { font-size: 0.75rem; margin: 0.25rem 0 0; }
+.query-meta-label { color: var(--muted); }
+.query-meta-value { color: var(--ink); }
+.query-meta-sep { color: var(--muted); }
+
 .error-message {
   background: rgba(224, 92, 92, 0.08);
   border-color: rgba(224, 92, 92, 0.3);

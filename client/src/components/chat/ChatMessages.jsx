@@ -1,3 +1,4 @@
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useEffect, useRef, useState } from 'react';
 import { FiCopy, FiCheck } from 'react-icons/fi';
@@ -65,6 +66,29 @@ const CopyPre = ({ children, node, ...props }) => {
   );
 };
 
+function QueryMetaLine({ metadata }) {
+  const fields = [];
+  if (metadata.piiColumnsMasked?.length > 0)
+    fields.push({ label: '🔒 Sanitized:', value: metadata.piiColumnsMasked.join(', ') });
+  if (metadata.tablesCached?.length > 0)
+    fields.push({ label: 'Tables cached:', value: metadata.tablesCached.join(', ') });
+  if (metadata.tokenCount)
+    fields.push({ label: 'Tokens:', value: metadata.tokenCount.toLocaleString() });
+  if (fields.length === 0) return null;
+  return (
+    <p className="query-meta">
+      {fields.map((f, i) => (
+        <React.Fragment key={f.label}>
+          {i > 0 && <span className="query-meta-sep"> · </span>}
+          <span className="query-meta-label">{f.label}</span>
+          {' '}
+          <span className="query-meta-value">{f.value}</span>
+        </React.Fragment>
+      ))}
+    </p>
+  );
+}
+
 const ChatMessages = ({ messages, error }) => {
   const containerRef = useRef(null);
 
@@ -78,12 +102,16 @@ const ChatMessages = ({ messages, error }) => {
   return (
     <div className='chat-messages' ref={containerRef}>
       {messages.map((message, index) => (
-        <div
-          key={index}
-          className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
-        >
-          <ReactMarkdown components={{ pre: CopyPre }}>{message.content}</ReactMarkdown>
-        </div>
+        <React.Fragment key={index}>
+          <div
+            className={`chat-message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
+          >
+            <ReactMarkdown components={{ pre: CopyPre }}>{message.content}</ReactMarkdown>
+          </div>
+          {message.role === 'bot' && message.metadata && (
+            <QueryMetaLine metadata={message.metadata} />
+          )}
+        </React.Fragment>
       ))}
       {error && <div className="chat-message bot-message error-message">{error}</div>}
     </div>

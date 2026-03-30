@@ -42,7 +42,7 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate, isB
         conversationId: conversationId.current,
         dialect,
       });
-      const { sql, explanation, tablesUsed } = response.data;
+      const { sql, explanation, tablesUsed, tablesCached, piiColumnsMasked, tokenCount } = response.data;
       const rlRemaining = response.headers['x-ratelimit-remaining'];
       const rlLimit = response.headers['x-ratelimit-limit'];
       const rlReset = response.headers['x-ratelimit-reset'];
@@ -54,7 +54,18 @@ const ChatBot = ({ onTablesUsed, onFirstMessage, dialect, onRateLimitUpdate, isB
       const content = sql
         ? `${explanation}\n\n\`\`\`sql\n${sql}\n\`\`\``
         : explanation;
-      setMessages((prev) => [...prev, { role: 'bot', content }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          content,
+          metadata: {
+            tablesCached: tablesCached ?? [],
+            piiColumnsMasked: piiColumnsMasked ?? [],
+            tokenCount: tokenCount ?? 0,
+          },
+        },
+      ]);
       if (typeof onTablesUsed === 'function' && tablesUsed?.length) {
         onTablesUsed(tablesUsed);
       }

@@ -82,6 +82,7 @@ jobs:
           SESSION_SECRET: ci-test-secret
           ALLOWED_ORIGINS: http://localhost:5173
           NODE_ENV: test
+          POSTGRES_SSL_REJECT_UNAUTHORIZED: 'false'
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node server.js &
 
