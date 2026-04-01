@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import postgresLogo from '/icons8-postgres.svg';
+import sqlserverLogo from '/icons8-microsoft-sql-server.svg';
 import DbExplorer from '../DbExplorer.jsx';
 import { API_BASE } from '../api.js';
 import ColdStartBanner from './ColdStartBanner.jsx';
@@ -331,9 +332,9 @@ export default function Login() {
         <header className='login-header'>
           <div className='brand'>
             <img
-              src={postgresLogo}
+              src={activeDb === 'postgres' ? postgresLogo : sqlserverLogo}
               className='logo'
-              alt='PostgreSQL logo'
+              alt={activeDb === 'postgres' ? 'PostgreSQL logo' : 'SQL Server logo'}
             />
             <div className='brand-text'>
               <p className='eyebrow'>AI DB Explorer</p>
