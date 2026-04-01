@@ -52,9 +52,10 @@ None.
 | 9 | fix client package-lock.json for CI/CD | 2026-03-30 | 4f6b142 | [9-fix-client-package-lock-json-for-ci-cd](./quick/9-fix-client-package-lock-json-for-ci-cd/) |
 | 10 | fix CI/CD health checks failing due to SSL | 2026-03-30 | 8aa2978 | [10-fix-ci-cd-health-checks-failing-due-to-s](./quick/10-fix-ci-cd-health-checks-failing-due-to-s/) |
 | 11 | optimize meta tags: full SEO, OG, Twitter Card, PWA manifest | 2026-04-01 | 4958146 | [11-optimize-meta-tags-and-everything-import](./quick/11-optimize-meta-tags-and-everything-import/) |
+| 12 | implement SQL Server logo instead of PostgreSQL logo when switching DB type | 2026-04-01 | 1c07f91 | [12-implement-sqlserverlogo-instead-of-postg](./quick/12-implement-sqlserverlogo-instead-of-postg/) |
 
 ## Session Continuity
 
 Last session: 2026-04-01
-Stopped at: quick task 11 complete — SEO/PWA meta tags added
+Stopped at: quick task 12 complete — dynamic DB logo in Login.jsx
 Resume: `/gsd:new-milestone` to start v1.2 planning
