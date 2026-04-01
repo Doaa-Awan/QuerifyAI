@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import postgresLogo from '/icons8-postgres.svg';
+import sqlserverLogo from '/icons8-microsoft-sql-server.svg';
 import DbExplorer from '../DbExplorer.jsx';
 import { API_BASE } from '../api.js';
 import ColdStartBanner from './ColdStartBanner.jsx';
@@ -114,10 +115,7 @@ export default function Login() {
   };
 
   const generateExplorerContext = async (dbType = 'postgres') => {
-    const endpoint =
-      dbType === 'sqlserver'
-        ? '/db/explorer-context-sqlserver/snapshot'
-        : '/db/explorer-context/snapshot';
+    const endpoint = dbType === 'sqlserver' ? '/db/explorer-context-sqlserver/snapshot' : '/db/explorer-context/snapshot';
     try {
       await axios.post(`${API_BASE}${endpoint}`);
     } catch (err) {
@@ -127,10 +125,7 @@ export default function Login() {
   };
 
   const clearExplorerContext = async (dbType = 'postgres') => {
-    const endpoint =
-      dbType === 'sqlserver'
-        ? '/db/explorer-context-sqlserver/clear'
-        : '/db/explorer-context/clear';
+    const endpoint = dbType === 'sqlserver' ? '/db/explorer-context-sqlserver/clear' : '/db/explorer-context/clear';
     try {
       await axios.post(`${API_BASE}${endpoint}`);
     } catch (err) {
@@ -319,199 +314,199 @@ export default function Login() {
 
   return (
     <>
-    <ColdStartBanner />
-    <div className='login-shell'>
-      <div className='login-card'>
-        {loading && (
-          <div className='login-loading-overlay'>
-            <div className='login-spinner' />
-            <p className='login-loading-text'>Connecting…</p>
-          </div>
-        )}
-        <header className='login-header'>
-          <div className='brand'>
-            <img
-              src={postgresLogo}
-              className='logo'
-              alt='PostgreSQL logo'
-            />
-            <div className='brand-text'>
-              <p className='eyebrow'>AI DB Explorer</p>
-              <h1>Connect your database</h1>
-              {/* <p className='subtitle'>{data?.message}</p> */}
+      <ColdStartBanner />
+      <div className='login-shell'>
+        <div className='login-card'>
+          {loading && (
+            <div className='login-loading-overlay'>
+              <div className='login-spinner' />
+              <p className='login-loading-text'>Connecting…</p>
             </div>
-          </div>
-          <div className={`status-pill ${dbStatus}`}>
-            <span
-              className='status-dot'
-              aria-hidden='true'
-            />
-            <span>{statusMessage || 'Ready to connect'}</span>
-            <span className='status-tag'>{dbStatus}</span>
-          </div>
-        </header>
+          )}
+          <header className='login-header'>
+            <div className='brand'>
+              <img
+                src={activeDb === 'postgres' ? postgresLogo : sqlserverLogo}
+                className='logo'
+                alt={activeDb === 'postgres' ? 'PostgreSQL logo' : 'SQL Server logo'}
+              />
+              <div className='brand-text'>
+                <p className='eyebrow'>AI DB Explorer</p>
+                <h1>Connect your database</h1>
+                {/* <p className='subtitle'>{data?.message}</p> */}
+              </div>
+            </div>
+            <div className={`status-pill ${dbStatus}`}>
+              <span
+                className='status-dot'
+                aria-hidden='true'
+              />
+              <span>{statusMessage || 'Ready to connect'}</span>
+              <span className='status-tag'>{dbStatus}</span>
+            </div>
+          </header>
 
-        <div className='db-tabs'>
-          <button
-            className={`tab ${activeDb === 'postgres' ? 'active' : ''}`}
-            onClick={() => setActiveDb('postgres')}
-            type='button'
-          >
-            PostgreSQL
-          </button>
-          <button
-            className={`tab ${activeDb === 'sqlserver' ? 'active' : ''}`}
-            onClick={() => setActiveDb('sqlserver')}
-            type='button'
-          >
-            SQL Server
-          </button>
+          <div className='db-tabs'>
+            <button
+              className={`tab ${activeDb === 'postgres' ? 'active' : ''}`}
+              onClick={() => setActiveDb('postgres')}
+              type='button'
+            >
+              PostgreSQL
+            </button>
+            <button
+              className={`tab ${activeDb === 'sqlserver' ? 'active' : ''}`}
+              onClick={() => setActiveDb('sqlserver')}
+              type='button'
+            >
+              SQL Server
+            </button>
+          </div>
+
+          {activeDb === 'postgres' ? (
+            <div className='panel'>
+              <div className='fields-grid'>
+                <div className='field'>
+                  <label htmlFor='pg-host'>Host</label>
+                  <input
+                    id='pg-host'
+                    value={host}
+                    onChange={(e) => setHost(e.target.value)}
+                    placeholder='localhost'
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='pg-port'>Port</label>
+                  <input
+                    id='pg-port'
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='pg-user'>User</label>
+                  <input
+                    id='pg-user'
+                    value={user}
+                    onChange={(e) => setUser(e.target.value)}
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='pg-password'>Password</label>
+                  <input
+                    id='pg-password'
+                    type='password'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <div className='field field-full'>
+                  <label htmlFor='pg-database'>Database</label>
+                  <input
+                    id='pg-database'
+                    value={database}
+                    onChange={(e) => setDatabase(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className='actions'>
+                <button
+                  className='btn primary'
+                  onClick={connect}
+                  type='button'
+                  disabled={loading}
+                >
+                  Connect
+                </button>
+                <button
+                  className='btn ghost'
+                  onClick={connectDemo}
+                  type='button'
+                  disabled={loading}
+                >
+                  Use Demo DB
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className='panel'>
+              <div className='fields-grid'>
+                <div className='field'>
+                  <label htmlFor='ms-server'>Server</label>
+                  <input
+                    id='ms-server'
+                    value={sqlServer}
+                    onChange={(e) => setSqlServer(e.target.value)}
+                    placeholder='localhost'
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='ms-port'>Port</label>
+                  <input
+                    id='ms-port'
+                    value={sqlPort}
+                    onChange={(e) => setSqlPort(e.target.value)}
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='ms-user'>User</label>
+                  <input
+                    id='ms-user'
+                    value={sqlUser}
+                    onChange={(e) => setSqlUser(e.target.value)}
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='ms-password'>Password</label>
+                  <input
+                    id='ms-password'
+                    type='password'
+                    value={sqlPassword}
+                    onChange={(e) => setSqlPassword(e.target.value)}
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='ms-database'>Database</label>
+                  <input
+                    id='ms-database'
+                    value={sqlDatabase}
+                    onChange={(e) => setSqlDatabase(e.target.value)}
+                  />
+                </div>
+                <div className='field'>
+                  <label htmlFor='ms-instance'>Instance (optional)</label>
+                  <input
+                    id='ms-instance'
+                    value={sqlInstance}
+                    onChange={(e) => setSqlInstance(e.target.value)}
+                    placeholder='SQLEXPRESS'
+                  />
+                </div>
+              </div>
+
+              <div className='actions'>
+                <button
+                  className='btn primary'
+                  onClick={connectSqlServer}
+                  type='button'
+                  disabled={loading}
+                >
+                  Connect
+                </button>
+                <button
+                  className='btn ghost'
+                  onClick={connectDemoSqlServer}
+                  type='button'
+                  disabled={loading}
+                >
+                  Use Demo DB
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-
-        {activeDb === 'postgres' ? (
-          <div className='panel'>
-            <div className='fields-grid'>
-              <div className='field'>
-                <label htmlFor='pg-host'>Host</label>
-                <input
-                  id='pg-host'
-                  value={host}
-                  onChange={(e) => setHost(e.target.value)}
-                  placeholder='localhost'
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='pg-port'>Port</label>
-                <input
-                  id='pg-port'
-                  value={port}
-                  onChange={(e) => setPort(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='pg-user'>User</label>
-                <input
-                  id='pg-user'
-                  value={user}
-                  onChange={(e) => setUser(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='pg-password'>Password</label>
-                <input
-                  id='pg-password'
-                  type='password'
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className='field field-full'>
-                <label htmlFor='pg-database'>Database</label>
-                <input
-                  id='pg-database'
-                  value={database}
-                  onChange={(e) => setDatabase(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className='actions'>
-              <button
-                className='btn primary'
-                onClick={connect}
-                type='button'
-                disabled={loading}
-              >
-                Connect
-              </button>
-              <button
-                className='btn ghost'
-                onClick={connectDemo}
-                type='button'
-                disabled={loading}
-              >
-                Use Demo DB
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className='panel'>
-            <div className='fields-grid'>
-              <div className='field'>
-                <label htmlFor='ms-server'>Server</label>
-                <input
-                  id='ms-server'
-                  value={sqlServer}
-                  onChange={(e) => setSqlServer(e.target.value)}
-                  placeholder='localhost'
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='ms-port'>Port</label>
-                <input
-                  id='ms-port'
-                  value={sqlPort}
-                  onChange={(e) => setSqlPort(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='ms-user'>User</label>
-                <input
-                  id='ms-user'
-                  value={sqlUser}
-                  onChange={(e) => setSqlUser(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='ms-password'>Password</label>
-                <input
-                  id='ms-password'
-                  type='password'
-                  value={sqlPassword}
-                  onChange={(e) => setSqlPassword(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='ms-database'>Database</label>
-                <input
-                  id='ms-database'
-                  value={sqlDatabase}
-                  onChange={(e) => setSqlDatabase(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label htmlFor='ms-instance'>Instance (optional)</label>
-                <input
-                  id='ms-instance'
-                  value={sqlInstance}
-                  onChange={(e) => setSqlInstance(e.target.value)}
-                  placeholder='SQLEXPRESS'
-                />
-              </div>
-            </div>
-
-            <div className='actions'>
-              <button
-                className='btn primary'
-                onClick={connectSqlServer}
-                type='button'
-                disabled={loading}
-              >
-                Connect
-              </button>
-              <button
-                className='btn ghost'
-                onClick={connectDemoSqlServer}
-                type='button'
-                disabled={loading}
-              >
-                Use Demo DB
-              </button>
-            </div>
-          </div>
-        )}
       </div>
-    </div>
     </>
   );
 }

@@ -1,0 +1,17 @@
+{
+  "name": "QuerifyAI",
+  "short_name": "QuerifyAI",
+  "description": "Natural language SQL explorer for PostgreSQL and SQL Server",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "/icons8-postgres.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
