@@ -54,9 +54,10 @@ None.
 | 11 | optimize meta tags: full SEO, OG, Twitter Card, PWA manifest | 2026-04-01 | 4958146 | [11-optimize-meta-tags-and-everything-import](./quick/11-optimize-meta-tags-and-everything-import/) |
 | 12 | implement SQL Server logo instead of PostgreSQL logo when switching DB type | 2026-04-01 | 1c07f91 | [12-implement-sqlserverlogo-instead-of-postg](./quick/12-implement-sqlserverlogo-instead-of-postg/) |
 | 13 | add column aliasing rules to AI system prompt for human-readable SQL output | 2026-04-15 | 7f67071 | [13-when-a-query-is-returned-it-should-be-mo](./quick/13-when-a-query-is-returned-it-should-be-mo/) |
+| 14 | improve AI SQL query generation: Report Column Selection rules | 2026-04-15 | b56fd8f | [14-improve-ai-sql-query-generation-to-selec](./quick/14-improve-ai-sql-query-generation-to-selec/) |
 
 ## Session Continuity
 
 Last session: 2026-04-15
-Stopped at: quick task 13 complete — column aliasing rules in AI system prompt
+Stopped at: quick task 14 complete — Report Column Selection rules in AI system prompt
 Resume: `/gsd:new-milestone` to start v1.2 planning
