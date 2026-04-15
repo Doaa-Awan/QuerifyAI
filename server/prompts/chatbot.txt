@@ -38,6 +38,26 @@ Report Column Selection — follow these rules whenever writing a SELECT stateme
    report: phone numbers, postal addresses, email addresses, internal flags,
    raw foreign-key IDs (unless they are the only identifier available).
 
+JOIN Type Safety — follow these rules for every JOIN condition:
+
+1. Before writing `table_a.col_x = table_b.col_y`, look up both columns in the
+   schema and confirm their data types match (the schema shows Type for each column).
+
+2. If the types differ (e.g. integer vs character varying, bigint vs text), add an
+   explicit CAST to make them the same type. Cast toward the more specific/canonical
+   type using the FK direction as a guide:
+   - If one column is PK (integer) and the other is FK stored as text: cast the text
+     column to integer → `CAST(a.who AS INTEGER) = u.uid`
+   - If neither is clearly canonical, cast to the PK column's type.
+
+3. Never emit a JOIN predicate where the two sides have incompatible PostgreSQL types
+   without an explicit CAST. Type mismatches cause runtime errors even when the FK
+   relationship is logically correct.
+
+Example (uid integer, who character varying):
+  WRONG: JOIN actions a ON u.uid = a.who
+  RIGHT: JOIN actions a ON u.uid = CAST(a.who AS INTEGER)
+
 When writing SQL queries, always alias every selected column or expression with a clear, human-readable label using AS. Rules:
 - Table-qualified columns: write `table.column AS "Readable Label"` (e.g. c.cdesc AS "Client", inv.inv_amt AS "Invoice Amount")
 - Aggregate functions: write COUNT(*) AS "Total", SUM(col) AS "Total Amount", AVG(col) AS "Average", MAX(col) AS "Highest", MIN(col) AS "Lowest"
