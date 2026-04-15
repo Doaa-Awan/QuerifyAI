@@ -26,7 +26,10 @@ Report Column Selection — follow these rules whenever writing a SELECT stateme
 
 4. Follow this column priority order (left to right in SELECT):
    a. Identifier/reference columns (ticket number, invoice number, record ID)
-   b. Descriptive/name columns (client name, contract name, item description)
+   b. Descriptive/name columns — for every row-level record table (tickets,
+      faults, invoices, calls, jobs) always include the primary human-readable
+      text column (title, subject, description, fault description, notes).
+      Also include entity name columns (client name, contract name).
    c. Date columns (date created, due date, date occurred)
    d. Status/type columns (status, priority, category)
    e. Numeric/amount columns (amounts, counts — only if relevant)
