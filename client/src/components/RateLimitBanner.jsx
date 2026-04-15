@@ -4,7 +4,7 @@ const DISMISS_KEY = 'querify_ratelimit_dismissed';
 
 export default function RateLimitBanner({ remaining }) {
   const [dismissed, setDismissed] = useState(() => {
-    try { return localStorage.getItem(DISMISS_KEY) === 'true'; }
+    try { return localStorage.getItem(DISMISS_KEY) === 'false'; }
     catch { return false; }
   });
 
